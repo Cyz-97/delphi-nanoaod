@@ -874,7 +874,12 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
                 temp = GenPart_fourMomentum_->at(nParticle);
                 int pdgid = sk::KP(i, 2);
                 TParticlePDG* particle = pdgDatabase->GetParticle(pdgid);
-                q = particle->Charge() / 3.0;
+                if (particle) {
+                    q = particle->Charge() / 3.0;
+                } else {
+                    particle = pdgDatabase->GetParticle(-pdgid);
+                    q = -particle->Charge() / 3.0;
+                }
                 pData.pid[nParticle] = pdgid;
                 pData.pwflag[nParticle] = -1;
             } else {
