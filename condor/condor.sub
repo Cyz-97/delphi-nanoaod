@@ -1,0 +1,13 @@
+universe = vanilla
+executable = run_condor.sh
+Output = condorOut/condor.$ENV(OUT).stdout
+Error = condorOut/condor.$ENV(OUT).stderr
+Log = condorOut/condor.$ENV(OUT).log
+Arguments = $ENV(IN) $ENV(OUT) $ENV(COPYDIR)
+should_transfer_files = Yes
++JobFlavour  = "espresso"
+RequestCpus = 4
+x509userproxy = $ENV(X509_USER_PROXY)
+use_x509userproxy = True
+getenv= True
+queue 1
