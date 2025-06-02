@@ -1,0 +1,22 @@
+sh_qqps_e91.25_c94_2l_c2:
+  type: sim
+  stream: qqps
+  origin: cern
+  version: v94c
+  energy: "91.25"
+  extension: .sdst
+
+short94_c2:
+  type: data
+  subdirs: [Y13709, Y13710]
+  version: v94c
+  energy: "91.25"
+  extension: .al
+
+sh_kk2f4146qqpy_e91.25_c94_2l_c2:
+  type: sim
+  stream: kk2f4146_qqpy
+  origin: lyon
+  version: v94c
+  energy: "91.25"
+  extension: .sdst

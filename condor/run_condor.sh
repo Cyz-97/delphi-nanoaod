@@ -1,28 +1,49 @@
 #!/bin/bash
 
-# Move to the working directory
-cd /afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod || exit 1
-
-# Set up DELPHI and ROOT environments
-source /cvmfs/delphi.cern.ch/setup.sh
-source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.34.04/x86_64-almalinux9.5-gcc115-opt/bin/thisroot.sh
-
 # Print the arguments
 echo "Arguments passed to this script:"
 echo "  input file  : $1"
 echo "  output file : $2"
 echo "  move to     : $3"
+echo "  data or mc  : $4"
 
-# Write PDLINPUT file for file-based input
-echo "FILE=$1" > dummy
+# Create a temporary working directory
+WORKDIR=$(mktemp -d /tmp/delphi_job_XXXXXX)
+echo "Working directory: $WORKDIR"
+trap 'rm -rf "$WORKDIR"' EXIT
 
-# Run the nanoAOD producer
-build/delphi-nanoaod/delphi-nanoaod -P dummy --mc --config config/delphi-nanoaod.yaml --output "$2"
+# Copy everything into the temp directory
+#cp -r /afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod/* "$WORKDIR"
+BASEDIR="/afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod"
+cp "$BASEDIR/build/delphi-nanoaod/delphi-nanoaod" "$WORKDIR/"
+cp "$BASEDIR/config/delphi-nanoaod.yaml" "$WORKDIR/"
+cp "$BASEDIR/scripts/treefy.C" "$WORKDIR/"
+cd "$WORKDIR" || exit 1
+
+# Set up environments
+source /cvmfs/delphi.cern.ch/setup.sh
+source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.34.04/x86_64-almalinux9.5-gcc115-opt/bin/thisroot.sh
+
+# Write unique PDLINPUT file
+echo "FILE=$1" > "${2}_dummy"
+
+# Run nanoAOD producer
+if [ "$4" = "MC" ]; then
+    #build/delphi-nanoaod/delphi-nanoaod -P "${2}_dummy" --mc --config config/delphi-nanoaod.yaml --output "$2"
+    delphi-nanoaod -P "${2}_dummy" --mc --config delphi-nanoaod.yaml --output "$2"
+else
+    #build/delphi-nanoaod/delphi-nanoaod -P "${2}_dummy" --config config/delphi-nanoaod.yaml --output "$2"
+    delphi-nanoaod -P "${2}_dummy" --config delphi-nanoaod.yaml --output "$2"
+fi
 
 # Run treefy step
-root -q -b -l "scripts/treefy.C+(\"$2\")"
+#root -q -b -l "scripts/treefy.C+(\"$2\")"
 
 # Move the output ROOT file to desired location
-mv nanoaod_* $3
+tpc="$2"
+#nanotree="${tpc/.root/_ttree.root}"
+
+mv "$tpc" "$3"
+#mv "$nanotree" "$3"
 
 

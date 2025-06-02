@@ -1,9 +1,9 @@
 universe = vanilla
-executable = run_condor.sh
-Output = condorOut/condor.$ENV(OUT).stdout
-Error = condorOut/condor.$ENV(OUT).stderr
-Log = condorOut/condor.$ENV(OUT).log
-Arguments = $ENV(IN) $ENV(OUT) $ENV(COPYDIR)
+executable = condor/run_condor.sh
+Output = condor/condorOut/condor.$ENV(OUT).stdout
+Error = condor/condorOut/condor.$ENV(OUT).stderr
+Log = condor/condorOut/condor.$ENV(OUT).log
+Arguments = $ENV(IN) $ENV(OUT) $ENV(COPYDIR) $ENV(ISMC)
 should_transfer_files = Yes
 +JobFlavour  = "espresso"
 RequestCpus = 4

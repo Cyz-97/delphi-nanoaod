@@ -79,6 +79,7 @@ int create_pdlinput(const argparse::ArgumentParser &program)
 
 int main(int argc, char *argv[])
 {
+  gErrorIgnoreLevel = kError;
   argparse::ArgumentParser program("delphi-nanoaod", DELPHI_NANOAOD_VERSION);
   configure_parser(program);
 
