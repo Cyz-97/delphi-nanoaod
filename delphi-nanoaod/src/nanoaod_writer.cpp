@@ -866,10 +866,10 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
         }
         if (pass) {
             // FORTRAN index starts with 1
-            int i = nParticle + 1;
+            int i = iSize + 1;
             XYZTVectorF temp;
             if (gen) {
-                temp = GenPart_fourMomentum_->at(nParticle);
+                temp = GenPart_fourMomentum_->at(iSize);
                 int pdgid = sk::KP(i, 2);
                 TParticlePDG* particle = pdgDatabase->GetParticle(pdgid);
                 if (particle) {
@@ -881,11 +881,11 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
                 pData.pid[nParticle] = pdgid;
                 pData.pwflag[nParticle] = -1;
             } else {
-                q = Part_charge_->at(nParticle);
-                temp = Part_fourMomentum_->at(nParticle);
-                lock[nParticle] = Part_lock_->at(nParticle);
+                q = Part_charge_->at(iSize);
+                temp = Part_fourMomentum_->at(iSize);
+                lock[nParticle] = Part_lock_->at(iSize);
                 // LEPTON ID with standard MUID and ELID
-                if (Part_charge_->at(nParticle) == 0) {
+                if (Part_charge_->at(iSize) == 0) {
                     pData.pwflag[nParticle] = 4;
                 // standard muon selection (3rd bit from the right)
                 } else if (sk::KMUID(1, i) & (1 << 2)) {
@@ -937,7 +937,7 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
             if (pData.highPurity[nParticle]) nParticleHP++;
             ++nParticle;
         }
-	else ++nParticle;
+	//else ++nParticle;
     }
     pData.nParticle         = nParticle;
     eData.nChargedParticle  = nChargedParticle;
