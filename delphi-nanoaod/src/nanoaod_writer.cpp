@@ -862,9 +862,7 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
             int status = sk::KP(iSize + 1, 1);
             pass = (status == 1); // final state particle
         } else {
-            ///// veto the beam background and other backgrounds /////
             pass = !Part_lock_->at(iSize); // bad particle
-            ///// veto the beam background and other backgrounds /////
         }
         if (pass) {
             // FORTRAN index starts with 1
@@ -925,7 +923,6 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
             pData.mass[nParticle]   = temp.M();
             pData.charge[nParticle] = q;
 
-
             // follow the same definition in eventSelection.h
             if (pData.pwflag[nParticle]<=2) {
                 pData.highPurity[nParticle]= pData.pwflag[nParticle]<=2 && temp.Pt() >= 0.2;
@@ -940,6 +937,7 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
             if (pData.highPurity[nParticle]) nParticleHP++;
             ++nParticle;
         }
+	else ++nParticle;
     }
     pData.nParticle         = nParticle;
     eData.nChargedParticle  = nChargedParticle;
@@ -951,10 +949,10 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
     eData.missTheta = netP.Theta();
     eData.missPhi = netP.Phi();
 
-		eData.missChargedP = netChargedP.Mag();
-		eData.missChargedPt = netChargedP.Perp();
-		eData.missChargedTheta = netChargedP.Theta();
-		eData.missChargedPhi = netChargedP.Phi();
+    eData.missChargedP = netChargedP.Mag();
+    eData.missChargedPt = netChargedP.Perp();
+    eData.missChargedTheta = netChargedP.Theta();
+    eData.missChargedPhi = netChargedP.Phi();
 
 }
 
@@ -1008,8 +1006,8 @@ void NanoAODWriter::user99()
 {
     // std::cout << "NanoAODWriter::user99: Finalising" << std::endl;
     file_->cd();
-    out_t->Write();
-    out_tgen->Write();
+    //out_t->Write();
+    //out_tgen->Write();
     writer_.reset();
 
     file_->Close();
