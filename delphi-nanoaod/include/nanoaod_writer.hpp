@@ -110,7 +110,7 @@ private:
     float hpc[particleData::nMaxPart];
     float hac[particleData::nMaxPart];
     float stic[particleData::nMaxPart];
-    float lock[particleData::nMaxPart];
+    int lock[particleData::nMaxPart];
     TDatabasePDG* pdgDatabase = nullptr;
 
     std::shared_ptr<int> Event_runNumber_;
@@ -174,6 +174,7 @@ private:
     std::shared_ptr<std::vector<XYZTVectorF>> GenPart_fourPosition_;
     std::shared_ptr<std::vector<float>> GenPart_tau_;
     std::shared_ptr<std::vector<int16_t>> GenPart_simIdx_;
+    std::shared_ptr<std::vector<float>> GenPart_mass_;
 
     std::shared_ptr<int16_t> nVtx_;
     std::shared_ptr<std::vector<int16_t>> Vtx_outgoingIdx_;

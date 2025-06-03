@@ -2,29 +2,122 @@
 select_hadrons: false   # T4 hadron tag
 
 skelana_flags:
-      IFLTRA: 1         # Track information
-      IFLODR: 1         # Reoder tracks
-      IFLVEC: 22        # VECP filling
-      IFLSTR: 11        # Track selection (LVLOCK filling)
-      IFLCUT: 3         # Track selection
-      IFLRVR: 111       # Recovery routine
-      IFLSIM: 1         # Simulation information filling                                         
-      IFLBSP: 2         # Beam spot                                            
-      IFLBTG: 2         # B-tagging
-      IFLPVT: 2         # Primary vertex
-      IFLVDR: 1         # refit VD with Z tracks with PV constraint
-      IFLFCT: 1         # refit FCA/FCB (RIF)  with PV constraint
-      IFLRNQ: 0         # Run quality selection
-      IFLBHP: 1         # Skip the bad 1997 HPC events
-      IFLUTE: 1         # Unassociated TE banks
-      IFLVDH: 1         # Vertex detector hits
-      IFLMUO: 1         # Muon identification
-      IFLECL: 2         # Electromagnetic cluster Information
-      IFLELE: 1         # ELEPHANT Electron identification
-      IFLEMC: 1         # Elm. calorimetry
-      IFLPHO: 1         # Photon/pi0 identification
-      IFLPHC: 1         # Converted photon
-      IFLHAC: 1         # Had. calorimetry
-      IFLHAD: 1         # Hadron identification
-      IFLRV0: 1         # V0 reconstruction
-      IFLJET: 1         # Jet reconstruction
+      # IFLTRA: 1         # Track information
+      # IFLODR: 1         # Reoder tracks
+      # IFLVEC: 22        # VECP filling
+      # IFLSTR: 11        # Track selection (LVLOCK filling)
+      # IFLCUT: 3         # Track selection
+      # IFLRVR: 111       # Recovery routine
+      # IFLSIM: 1         # Simulation information filling                                         
+      # IFLBSP: 2         # Beam spot                                            
+      # IFLBTG: 2         # B-tagging
+      # IFLPVT: 2         # Primary vertex
+      # IFLVDR: 1         # refit VD with Z tracks with PV constraint
+      # IFLFCT: 1         # refit FCA/FCB (RIF)  with PV constraint
+      # IFLRNQ: 0         # Run quality selection
+      # IFLBHP: 1         # Skip the bad 1997 HPC events
+      # IFLUTE: 1         # Unassociated TE banks
+      # IFLVDH: 1         # Vertex detector hits
+      # IFLMUO: 1         # Muon identification
+      # IFLECL: 2         # Electromagnetic cluster Information
+      # IFLELE: 1         # ELEPHANT Electron identification
+      # IFLEMC: 1         # Elm. calorimetry
+      # IFLPHO: 1         # Photon/pi0 identification
+      # IFLPHC: 1         # Converted photon
+      # IFLHAC: 1         # Had. calorimetry
+      # IFLHAD: 1         # Hadron identification
+      # IFLRV0: 1         # V0 reconstruction
+      # IFLJET: 1         # Jet reconstruction
+
+      IFLTRA:   1
+      IFLODR:   1
+      IFLVEC:  22
+      IFLSTR:  11
+      IFLCUT:   3
+      IFLRVR: 111
+      IFLSIM:   1
+      IFLBSP:   2
+      IFLBTG:   2
+      IFLPVT:   1
+      IFLVDR:   1
+      IFLFCT:   1
+      IFLRNQ:   0
+      IFLBHP:   1
+      IFLUTE:   1
+      IFLVDH:   1
+      IFLMUO:   1
+      IFLECL:  22
+      IFLELE:   1
+      IFLEMC:   1
+      IFLPHO:   1
+      IFLPHC:   1
+      IFLSTC:   1
+      IFLHAC:   1
+      IFLHAD:   1
+      IFLRV0:   1
+      IFLJET:   0
+      IFLENR:   0
+
+skelana_cuts:
+#   Old SKELANA selection:
+      TRKMOM1: 0.1
+      TRKLEN1: 30.
+      TRKRPH1: 5.
+      TRKZET1: 10.
+      TRCCOS1: 0.94
+      TRKERR1: 1.
+      TRNCOS1: 0.98
+      TRKMAX1: 1.E+10
+      EHPC1:   1.E-10
+      EFEMC1:  1.E-10
+      EHAC1:   1.E-10
+      ESTIC1:  1.E-10
+      RECCAL1: 1.E+10
+#   May 98 tuning for 97 data
+      TRKMOM2: 0.2
+      TRKLEN2: 0.
+      TRKRPH2: 4.
+      TRKZET2: 4.
+      TRCCOS2: 1.
+      TRKMAX2: 1.5
+      TRKERR2: 1.
+      TRNCOS2: 1.
+      EHPC2:   0.5
+      EFEMC2:  0.4
+      EHAC2:   0.9
+      ESTIC2:  0.3
+      RECCAL2: 5.
+#   April 99 tuning for 98 data
+      TRKMOM3: 0.1
+      TRKLEN3: 30.
+      # TRKRPH3: 4.
+      TRKRPH3: 10.
+      # TRKZET3: 4.
+      TRKZET3: 10.
+      # TRCCOS3: 0.94
+      TRCCOS3: 1.
+      TRKMAX3: 1.5
+      TRKERR3: 1.
+      # TRNCOS3: 0.98
+      TRNCOS3: 1.
+      EHPC3:   0.3
+      EFEMC3:  0.4
+      EHAC3:   0.
+      ESTIC3:  0.3
+      RECCAL3: 5.0
+
+skelana_intcuts:
+      VDONLY1: 0
+      IDVDWZ1: 0
+      IHADRJ1: 0
+      ISTOEL1: 0
+
+      VDONLY2: 2
+      IDVDWZ2: 1
+      IHADRJ2: 0
+      ISTOEL2: 0
+
+      VDONLY3: 1
+      IDVDWZ3: 1
+      IHADRJ3: 2
+      ISTOEL3: 1

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <set>
 #include <string>
 
@@ -54,6 +55,30 @@ namespace skelana
         }
     }
 
+    void Analysis::setCut(const std::string &cut, float value)
+    {
+        if (cutMap_.find(cut) != cutMap_.end())
+        {
+            cuts_[cut] = value;
+        }
+        else
+        {
+            std::cerr << "Unknown cut: " << cut << std::endl;
+        }
+    }
+
+    void Analysis::setIntCut(const std::string &intCut, int value)
+    {
+        if (intCutMap_.find(intCut) != intCutMap_.end())
+        {
+            intCuts_[intCut] = value;
+        }
+        else
+        {
+            std::cerr << "Unknown intCut: " << intCut << std::endl;
+        }
+    }
+
     void Analysis::printSkelanaSettings(std::ostream &os)
     {
         os << "\nSkelana flags:" << std::endl;
@@ -64,6 +89,7 @@ namespace skelana
 
         if (IFLSTR > 0)
         {
+            os << std::fixed << std::setprecision(3);
             os << "\nTrack selection cuts for this run:" << std::endl;
             os << "   TRKMOM = " << TRKMOM(IFLCUT) << std::endl;
             os << "   TRKMAX = " << TRKMAX(IFLCUT) << std::endl;
@@ -82,6 +108,7 @@ namespace skelana
             os << "   ESTIC  = " << ESTIC(IFLCUT) << std::endl;
             os << "   TRNCOS = " << TRNCOS(IFLCUT) << std::endl;
             os << "   RECCAL = " << RECCAL(IFLCUT) << std::endl;
+            os << std::defaultfloat;
         }
     }
 
@@ -97,6 +124,20 @@ namespace skelana
         for (const auto &opt : options_)
         {   
             if (auto it = optionMap_.find(opt.first); it != optionMap_.end())
+            {
+                *it->second = opt.second;
+            }
+        }
+        for (const auto &opt : cuts_)
+          {
+            if (auto it = cutMap_.find(opt.first); it != cutMap_.end())
+              {
+                *it->second = opt.second;
+              }
+          }
+        for (const auto &opt : intCuts_)
+        {
+            if (auto it = intCutMap_.find(opt.first); it != intCutMap_.end())
             {
                 *it->second = opt.second;
             }

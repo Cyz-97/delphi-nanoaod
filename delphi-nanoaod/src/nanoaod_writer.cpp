@@ -116,11 +116,6 @@ void NanoAODWriter::user00()
     out_t->SetDirectory(file_);
     out_tgen->SetDirectory(file_);
 
-    out_t->Branch("EMF", emf);
-    out_t->Branch("HPC", hpc);
-    out_t->Branch("HAC", hac);
-    out_t->Branch("STIC", stic);
-    out_t->Branch("LOCK", lock);
 
     // register branches
     do_chThrust           = false;
@@ -133,6 +128,12 @@ void NanoAODWriter::user00()
 
     out_pData_gen.SetBranchWrite(out_tgen, 1);
     out_eData_gen.SetBranchWrite(out_tgen, 0);
+
+    out_t->Branch("EMF", emf, "EMF[nParticle]/F");
+    out_t->Branch("HPC", hpc, "HPC[nParticle]/F");
+    out_t->Branch("HAC", hac, "HAC[nParticle]/F");
+    out_t->Branch("STIC", stic, "STIC[nParticle]/F");
+    out_t->Branch("LOCK", lock, "LOCK[nParticle]/I");
 
     pdgDatabase = TDatabasePDG::Instance();
 };
@@ -438,6 +439,7 @@ void NanoAODWriter::defineGenPart(std::unique_ptr<RNTupleModel> &model)
     MakeField(model, "GenPart_vertex", "Generated particle 4-position", GenPart_fourPosition_);
     MakeField(model, "GenPart_tau", "Generated particle lifetime", GenPart_tau_);
     MakeField(model, "GenPart_simIdx", "Generated particle simulation index", GenPart_simIdx_);
+    MakeField(model, "GenPart_mass", "Generated particle mass", GenPart_mass_);
 }
 
 void NanoAODWriter::fillGenPart()
@@ -461,6 +463,10 @@ void NanoAODWriter::fillGenPart()
                { return sk::VP(i, 5); });
     fillVector(GenPart_simIdx_, 1, sk::NP, [](int i)
                { return sk::ISHST(i) - 1; });
+
+    fillVector(GenPart_mass_, 1, sk::NP, [](int i)
+    { return sk::PP(i, 5) - 1; });
+
 }
 
 void NanoAODWriter::defineSimVtx(std::unique_ptr<RNTupleModel> &model)
@@ -880,6 +886,13 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
                 }
                 pData.pid[nParticle] = pdgid;
                 pData.pwflag[nParticle] = -1;
+                pData.highPurity[nParticle]= -1;
+
+                nParticleHP++;
+                if (abs(q) > 0.5) {
+                    nChargedParticle++;
+                    nChargedParticleHP++;
+                }
             } else {
                 q = Part_charge_->at(iSize);
                 temp = Part_fourMomentum_->at(iSize);
@@ -896,11 +909,28 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
                 } else {
                     pData.pwflag[nParticle] = 0;
                 }
+                // TODO: use vdHits?
                 pData.ntpc[nParticle] = (pData.charge[nParticle]!=0)? 7: 0;
                 pData.d0[nParticle] = sk::QTRAC(4, i);
                 pData.z0[nParticle] = sk::QTRAC(5, i);
                 // use this variable to store track length for DELPHI
                 pData.weight[nParticle] = sk::QTRAC(24, i);
+
+                // below we follow the same definition in eventSelection.h
+                // TODO: Use DELPHI selections
+                if (pData.pwflag[nParticle]<=2) {
+                    pData.highPurity[nParticle]= pData.pwflag[nParticle]<=2 && temp.Pt() >= 0.2;
+                } else if (pData.pwflag[nParticle]==4) {
+                    pData.highPurity[nParticle]= pData.pwflag[nParticle]==4 && temp.Pt() >= 0.4;
+                }
+
+                if(pData.pwflag[nParticle]<=2) {
+                    nChargedParticle++;
+                    if (pData.highPurity[nParticle]) nChargedParticleHP++;
+                }
+                if (pData.highPurity[nParticle]) {
+                    nParticleHP++;
+                }
             }
             netP -= TVector3(temp.x(), temp.y(), temp.z());
             if (abs(q) > 0.5) {
@@ -923,21 +953,8 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
             pData.mass[nParticle]   = temp.M();
             pData.charge[nParticle] = q;
 
-            // follow the same definition in eventSelection.h
-            if (pData.pwflag[nParticle]<=2) {
-                pData.highPurity[nParticle]= pData.pwflag[nParticle]<=2 && temp.Pt() >= 0.2;
-            } else if (pData.pwflag[nParticle]==4) {
-                pData.highPurity[nParticle]= pData.pwflag[nParticle]==4 && temp.Pt() >= 0.4;
-            }
-
-            if(pData.pwflag[nParticle]<=2) {
-                nChargedParticle++;
-                if (pData.highPurity[nParticle]) nChargedParticleHP++;
-            }
-            if (pData.highPurity[nParticle]) nParticleHP++;
             ++nParticle;
         }
-	//else ++nParticle;
     }
     pData.nParticle         = nParticle;
     eData.nChargedParticle  = nChargedParticle;

@@ -135,6 +135,28 @@ int main(int argc, char *argv[])
         nanoAODWriter->setOption(flag, value);
       }
     }
+
+    if (auto skelanaCuts = configNode["skelana_cuts"])
+    {
+      for (auto it = skelanaCuts.begin(); it != skelanaCuts.end(); ++it)
+      {
+        std::string cut = it->first.as<std::string>();
+        float value = it->second.as<float>();
+        std::cout << "skelana_cut: " << cut << " = " << value << std::endl;
+        nanoAODWriter->setCut(cut, value);
+      }
+    }
+
+    if (auto skelanaIntCuts = configNode["skelana_intcuts"])
+    {
+      for (auto it = skelanaIntCuts.begin(); it != skelanaIntCuts.end(); ++it)
+      {
+        std::string intCut = it->first.as<std::string>();
+        int value = it->second.as<int>();
+        std::cout << "skelana_intCut: " << intCut << " = " << value << std::endl;
+        nanoAODWriter->setIntCut(intCut, value);
+      }
+    }
   }
   catch (const YAML::BadFile &err)
   {
