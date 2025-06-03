@@ -3,7 +3,9 @@
 source /cvmfs/sft.cern.ch/lcg/views/LCG_104/x86_64-el9-gcc12-opt/setup.sh
 
 
-export generator=kk2f4146_qqpy
+#export generator=kk2f4146_qqpy
+export generator=qqps
+#export generator="."
 
 export year=1994
 
