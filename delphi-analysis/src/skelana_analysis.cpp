@@ -3,7 +3,6 @@
 #include <set>
 #include <string>
 
-
 #include "skelana_analysis.hpp"
 #include "skelana.hpp"
 #include "phdst.hpp"
@@ -239,8 +238,8 @@ namespace skelana
 
     void Analysis::user02()
     {
-        // std::cout << "Skelana::Analysis::user02: Processing event " << phdst::NEVENT+1 << std::endl;
-        PSBEG();
+      // std::cout << "Skelana::Analysis::user02: Processing event " << phdst::NEVENT+1 << std::endl;
+      PSBEG();
     }
 
     void Analysis::user99()

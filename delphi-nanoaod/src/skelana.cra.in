@@ -62,7 +62,6 @@
 %
 %   Get the code of SKELANA and SKELEXA (example) routines
 %
-
 +USE,P=PSSERV,D=PSJETS,T=EXE.
 +ADD, P=PSSERV, D=PSJETS, L=70.
 *

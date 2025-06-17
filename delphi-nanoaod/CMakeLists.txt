@@ -4,7 +4,6 @@ set (FASTJETDIR /afs/cern.ch/work/c/cmcginn/public/Fastjet/fastjet-install)
 configure_file(src/skelana.cra.in skelana.cra)
 ypatchy(skelana.f ${CMAKE_CURRENT_BINARY_DIR}/skelana.cra)
 
-
 add_executable(delphi-nanoaod src/delphi-nanoaod.cpp src/nanoaod_writer.cpp ${CMAKE_CURRENT_BINARY_DIR}/skelana.f)
 
 execute_process(COMMAND ${FASTJETDIR}/bin/fastjet-config --cxxflags
@@ -30,7 +29,6 @@ target_link_libraries(delphi-nanoaod ROOT::Core ROOT::RIO ROOT::ROOTNTuple ROOT:
 target_link_dellibs(delphi-nanoaod skelana phdst dstana pxdst vfclap vdclap ufield bsaurus herlib trigger uhlib dstana)
 target_link_cernlibs(delphi-nanoaod genlib packlib kernlib ariadne herwig jetset74)
 target_link_libraries(delphi-nanoaod gfortran)
-
 
 # version header
 add_custom_target(version ALL
