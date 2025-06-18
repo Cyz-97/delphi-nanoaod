@@ -88,7 +88,7 @@ private:
     void fillHadid();
     void defineBtag(std::unique_ptr<RNTupleModel> &model);
     void fillBtag();
-    void fillPartLoop(particleData& pData, eventData& eData, bool gen = false);
+    void fillPartLoop(particleData& pData, eventData& eData, int cat = 0);
     void fillSelection(particleData& pData, eventData& eData);
 
     std::filesystem::path output_;
@@ -104,6 +104,10 @@ private:
     TTree* out_tgen = nullptr;
     particleData    out_pData_gen;
     eventData       out_eData_gen;
+
+    TTree* out_tsim = nullptr;
+    particleData    out_pData_sim;
+    eventData       out_eData_sim;
 
     // Variables for event information and particle data
     float emf[particleData::nMaxPart];
