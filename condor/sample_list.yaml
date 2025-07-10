@@ -4,6 +4,7 @@ sh_qqps_e91.25_c94_2l_c2:
   origin: cern
   version: v94c
   energy: "91.25"
+  copy_energy: "91.25"
   extension: .sdst
 
 short94_c2:
@@ -19,4 +20,270 @@ sh_kk2f4146qqpy_e91.25_c94_2l_c2:
   origin: lyon
   version: v94c
   energy: "91.25"
+  copy_energy: "91.25"
   extension: .sdst
+
+sh_kk2f4146qqpydcy_e91.25_c94_2l_c2:
+  type: sim
+  stream: kk2f4146_qqpydcy
+  origin: cern
+  version: v94c
+  energy: "91.25"
+  copy_energy: "91.25"
+  extension: .sdst
+
+sh_kk2f4146qqardcy_e91.25_r94_2l_c2:
+  type: sim
+  stream: kk2f4146_qqardcy
+  origin: ral
+  version: v94c
+  energy: "91.25"
+  copy_energy: "91.25"
+  extension: .sdst
+
+sh_apacic105_e91.25_w94_2l_c2:
+  type: sim
+  stream: apacic105
+  origin: wupp
+  version: v94c
+  energy: "91.25"
+  copy_energy: "91.25"
+  extension: .sdst
+
+sh_zgpy_b94_2l_c2:
+  type: sim
+  subdirs: [Y10098]
+  file_patterns:
+    - subdir: Y10098
+      pattern: "Y10098.[241-252].al"
+  stream: zgpy  
+  version: v94c        
+  energy: "91.25"      
+  copy_energy: "91.25" 
+  extension: .al
+
+sh_zgpy_b94_2l_c2:
+  type: sim
+  subdirs: [Y10096, Y10097, Y10098, Y10502]
+  file_patterns:
+    - subdir: Y10096
+      pattern: "Y10098.[1-240].al"
+    - subdir: Y10097
+      pattern: "Y10098.[1-238].al"
+    - subdir: Y10098
+      pattern: "Y10098.[1-240].al"
+    - subdir: Y10502
+      pattern: "Y10098.[1-201].al"
+  stream: qqps
+  version: v94c        
+  energy: "91.25"      
+  copy_energy: "91.25" 
+  extension: .al
+
+xsdst99_e192_e1:
+  subdirs: [R05096]
+  type: data
+  version: v99e1
+  energy: "192"
+  extension: .al
+
+xsdst99_e196_e1:
+  subdirs: [R02360]
+  type: data
+  version: v99e1
+  energy: "196"
+  extension: .al
+
+xsdst99_e200_e1:
+  subdirs: [R02125]
+  type: data
+  version: v99e1
+  energy: "200"
+  extension: .al
+
+xsdst99_e202_e1:
+  subdirs: [R05107]
+  type: data
+  version: v99e1
+  energy: "202"
+  extension: .al
+
+xs_kk2f4143qq_e191.6_r99_1l_e1:
+  type: sim
+  stream: kk2f4143_qq
+  origin: ral
+  version: v99e
+  energy: "191.6"
+  copy_energy: "192"
+  extension: .xsdst
+
+xs_kk2f4143qq_e195.5_l99_1l_e1:
+  type: sim
+  stream: kk2f4143_qq
+  origin: lyon
+  version: v99e
+  energy: "195.5"
+  copy_energy: "196"
+  extension: .xsdst
+
+xs_kk2f4143qq_e199.5_c99_1l_e1:
+  type: sim
+  stream: kk2f4143_qq
+  origin: cern
+  version: v99e
+  energy: "199.5"
+  copy_energy: "200"
+  extension: .xsdst
+
+xs_kk2f4143qq_e201.6_l99_1l_e1:
+  type: sim
+  stream: kk2f4143_qq
+  origin: lyon
+  version: v99e
+  energy: "201.6"
+  copy_energy: "202"
+  extension: .xsdst
+
+xs_wphact24cc_e191.6_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact24_cc
+  origin: cern
+  version: v99e
+  energy: "191.6"
+  copy_energy: "192"
+  extension: .xsdst
+
+xs_wphact24cc_e195.5_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact24_cc
+  origin: cern
+  version: v99e
+  energy: "195.5"
+  copy_energy: "196"
+  extension: .xsdst
+
+xs_wphact24cc_e199.5_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact24_cc
+  origin: cern
+  version: v99e
+  energy: "199.5"
+  copy_energy: "200"
+  extension: .xsdst
+
+xs_wphact24cc_e201.6_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact24_cc
+  origin: cern
+  version: v99e
+  energy: "201.6"
+  copy_energy: "202"
+  extension: .xsdst
+
+xs_wphact21nc4f_e191.6_m80.4_l99_1l_e1:
+  type: sim
+  stream: wphact21_nc4f
+  origin: lyon
+  version: v99e
+  energy: "191.6"
+  copy_energy: "192"
+  extension: .xsdst
+
+xs_wphact21nc4f_e195.5_m80.4_l99_1l_e1:
+  type: sim
+  stream: wphact21_nc4f
+  origin: lyon
+  version: v99e
+  energy: "195.5"
+  copy_energy: "196"
+  extension: .xsdst
+
+xs_wphact21nc4f_e199.5_m80.4_l99_1l_e1:
+  type: sim
+  stream: wphact21_nc4f
+  origin: lyon
+  version: v99e
+  energy: "199.5"
+  copy_energy: "200"
+  extension: .xsdst
+
+xs_wphact21nc4f_e201.6_m80.4_l99_1l_e1:
+  type: sim
+  stream: wphact21_nc4f
+  origin: lyon
+  version: v99e
+  energy: "201.6"
+  copy_energy: "202"
+  extension: .xsdst
+
+xs_wphact211ncgg_e191.6_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact211_ncgg
+  origin: cern
+  version: v99e
+  energy: "191.6"
+  copy_energy: "192"
+  extension: .xsdst
+
+xs_wphact211ncgg_e195.5_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact211_ncgg
+  origin: cern
+  version: v99e
+  energy: "195.5"
+  copy_energy: "196"
+  extension: .xsdst
+
+xs_wphact211ncgg_e199.5_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact211_ncgg
+  origin: cern
+  version: v99e
+  energy: "199.5"
+  copy_energy: "200"
+  extension: .xsdst
+
+xs_wphact211ncgg_e201.6_m80.4_c99_1l_e1:
+  type: sim
+  stream: wphact211_ncgg
+  origin: cern
+  version: v99e
+  energy: "201.6"
+  copy_energy: "202"
+  extension: .xsdst
+
+xs_kk2f4144tthl_e191.6_c99_1l_e1:
+  type: sim
+  stream: kk2f4144_tthl
+  origin: cern
+  version: v99e
+  energy: "191.6"
+  copy_energy: "192"
+  extension: .xsdst
+
+xs_kk2f4144tthl_e195.5_c99_1l_e1:
+  type: sim
+  stream: kk2f4144_tthl
+  origin: cern
+  version: v99e
+  energy: "195.5"
+  copy_energy: "196"
+  extension: .xsdst
+
+xs_kk2f4144tthl_e199.5_c99_1l_e1:
+  type: sim
+  stream: kk2f4144_tthl
+  origin: cern
+  version: v99e
+  energy: "199.5"
+  copy_energy: "200"
+  extension: .xsdst
+
+xs_kk2f4144tthl_e201.6_c99_1l_e1:
+  type: sim
+  stream: kk2f4144_tthl
+  origin: cern
+  version: v99e
+  energy: "201.6"
+  copy_energy: "202"
+  extension: .xsdst

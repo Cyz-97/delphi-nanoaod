@@ -228,7 +228,7 @@ namespace skelana
             for (int i = 1; i <= NEVBAD; ++i)
             {
                 if (phdst::IIIRUN == IRNBAD(i) && phdst::IIIEVT == IEVBAD(i))
-                {
+		  {
                     return false;
                 }
             }

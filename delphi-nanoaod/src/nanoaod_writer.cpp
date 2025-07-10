@@ -875,8 +875,6 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
     TVector3 netPGen(0, 0, 0);
     TVector3 netChargedPGen(0, 0, 0);
     std::vector<int> llp;
-    float em(0);
-    float ed(0);
     //int nSize = (gen)? *nGenPart_ : *nPart_;
     int nSize = (cat == 0) ? *nPart_
            : (cat == 1) ? *nGenPart_
@@ -926,6 +924,9 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
 	    pData.pwflag[nParticle] = (sk::KP(i, 1) == 1) ? 1 : 4; 
 	    pData.highPurity[nParticle]= 1;
 
+	    pData.index[nParticle] = i;
+	    pData.correspondenceIndex[nParticle] = sk::ILUST(i);
+
 	    nParticleHP++;
 	    if (abs(q) > 0.5) {
 	      nChargedParticle++;
@@ -933,11 +934,15 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
 	    }
 	  } else if (cat==2) {
 	    temp = SimPart_fourMomentum_->at(iSize);
-	    q = sk::VECP(7, sk::MTRACK+i);
+	    q = sk::VECP(7, sk::MTRACK+i);    
 	    pData.pid[nParticle] = sk::KP(sk::ISTSH(iSize+1), 2);
 	    // store mass code. -- 2 for electron (only thing useful as of June 11 2025)
-	    pData.pwflag[nParticle] = sk::VECP(8, sk::MTRACK+i); 
+	    pData.pwflag[nParticle] = sk::VECP(8, i); 
 	    pData.highPurity[nParticle]= 1;
+
+	    pData.index[nParticle] = i;
+	    pData.correspondenceIndex[nParticle] = sk::ISTPA(i);
+	    
 	    nParticleHP++;
 	    nChargedParticle++;
 	    nChargedParticleHP++;
@@ -945,14 +950,19 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
 	    q = Part_charge_->at(iSize);
 	    temp = Part_fourMomentum_->at(iSize);
 	    lock[nParticle] = Part_lock_->at(iSize);
-	    // LEPTON ID with standard MUID and ELID
+	    // Photon ID using VECP pre-selected for now (2025 June 26)
 	    if (Part_charge_->at(iSize) == 0) {
-	      pData.pwflag[nParticle] = 4;
-	      // standard muon selection (3rd bit from the right)
+	      if (sk::VECP(8, i) == 21) {
+		pData.pwflag[nParticle] = 21;
+	      }	else {
+		pData.pwflag[nParticle] = 4;
+	      }
+	    // LEPTON ID with standard MUID and ELID
 	    } else if (sk::KMUID(1, i) & (1 << 2)) {
+	      // standard muon selection (3rd bit from the right)
 	      pData.pwflag[nParticle] = 1;
-	      // standard electron selection
 	    } else if (sk::KELID(1, i) >= 4) {
+	      // standard electron selection
 	      pData.pwflag[nParticle] = 2;
 	      // loose conversion ele tag
 	    } else if (sk::KELID(2, i) >= 1) {
@@ -974,6 +984,9 @@ void NanoAODWriter::fillPartLoop(particleData& pData,
 	    } else if (pData.pwflag[nParticle]==4) {
 	      pData.highPurity[nParticle]= pData.pwflag[nParticle]==4 && temp.Pt() >= 0.4;
 	    }
+
+	    pData.index[nParticle] = i;
+	    pData.correspondenceIndex[nParticle] = sk::IPAST(i);
 	    
 	    if(pData.pwflag[nParticle]<=2) {
 	      nChargedParticle++;

@@ -13,7 +13,6 @@ echo "Working directory: $WORKDIR"
 trap 'rm -rf "$WORKDIR"' EXIT
 
 # Copy everything into the temp directory
-#cp -r /afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod/* "$WORKDIR"
 BASEDIR="/afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod"
 cp "$BASEDIR/build/delphi-nanoaod/delphi-nanoaod" "$WORKDIR/"
 cp "$BASEDIR/config/delphi-nanoaod.yaml" "$WORKDIR/"
@@ -29,21 +28,19 @@ echo "FILE=$1" > "${2}_dummy"
 
 # Run nanoAOD producer
 if [ "$4" = "MC" ]; then
-    #build/delphi-nanoaod/delphi-nanoaod -P "${2}_dummy" --mc --config config/delphi-nanoaod.yaml --output "$2"
     delphi-nanoaod -P "${2}_dummy" --mc --config delphi-nanoaod.yaml --output "$2"
 else
-    #build/delphi-nanoaod/delphi-nanoaod -P "${2}_dummy" --config config/delphi-nanoaod.yaml --output "$2"
     delphi-nanoaod -P "${2}_dummy" --config delphi-nanoaod.yaml --output "$2"
 fi
 
 # Run treefy step
-#root -q -b -l "scripts/treefy.C+(\"$2\")"
+root -q -b -l "treefy.C+(\"$2\")"
 
 # Move the output ROOT file to desired location
 tpc="$2"
-#nanotree="${tpc/.root/_ttree.root}"
+nanotree="${tpc/.root/_ttree.root}"
 
 mv "$tpc" "$3"
-#mv "$nanotree" "$3"
+mv "$nanotree" "$3"
 
 

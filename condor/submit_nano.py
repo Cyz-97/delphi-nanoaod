@@ -22,15 +22,56 @@ def build_patterns(nickname):
         ]
         copy_dir = user_output_base / "collision_data" / cfg["version"] / cfg["energy"]
         TYPE = "DATA"
+    elif cfg["type"] == "sim" and "subdirs" in cfg:
+        # Handle hybrid case: sim type but with data-like search path
+        patterns = []
+        
+        if "file_patterns" in cfg:
+            # Handle multiple subdirs with specific file patterns
+            for subdir_config in cfg["file_patterns"]:
+                subdir = subdir_config["subdir"]
+                file_pattern = subdir_config["pattern"]
+                
+                # Check if pattern contains numeric range like [241-252]
+                import re
+                range_match = re.search(r'\[(\d+)-(\d+)\]', file_pattern)
+                if range_match:
+                    start, end = map(int, range_match.groups())
+                    base_pattern = file_pattern.replace(range_match.group(0), '{}')
+                    for num in range(start, end + 1):
+                        pattern = str(opendata_dir / "collision-data" / subdir / base_pattern.format(num))
+                        patterns.append(pattern)
+                else:
+                    pattern = str(opendata_dir / "collision-data" / subdir / file_pattern)
+                    patterns.append(pattern)
+        elif "file_pattern" in cfg:
+            # Handle single file pattern for all subdirs
+            for subdir in cfg["subdirs"]:
+                pattern = str(opendata_dir / "collision-data" / subdir / cfg["file_pattern"])
+                patterns.append(pattern)
+        else:
+            # Default to wildcard pattern
+            for subdir in cfg["subdirs"]:
+                pattern = str(opendata_dir / "collision-data" / subdir / f"*{cfg['extension']}")
+                patterns.append(pattern)
+        if cfg["copy_energy"]:
+            copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["copy_energy"] / cfg["stream"]
+        else:
+            copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["energy"] / cfg["stream"]
+        TYPE = "MC"
     else:
+        # Original sim type logic
         pattern = str(
             opendata_dir / "simulated-data" / cfg["origin"] / "**" / cfg["version"] /
             "**" / f"{cfg['stream']}_*{cfg['energy']}*{cfg['extension']}"
         )
         patterns = [pattern]
-        copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["energy"] / cfg["stream"]
+        if cfg["copy_energy"]:
+            copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["copy_energy"] / cfg["stream"]
+        else:
+            copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["energy"] / cfg["stream"]
         TYPE = "MC"
-
+    
     print("Search pattern:", patterns)
     return patterns, str(copy_dir), TYPE
 
@@ -74,7 +115,7 @@ def load_config(yaml_path="condor/sample_list.yaml"):
 if __name__ == "__main__":
 
     min_bytes = 100_000      # 100 KB
-    max_days = 30
+    max_days = 3
 
     MAX_QUEUE = 100
     USER = os.environ["USER"]
@@ -84,9 +125,41 @@ if __name__ == "__main__":
     #nickname = "short94_c2"
     #nickname = "sh_qqps_e91.25_c94_2l_c2"
     nickname = "sh_kk2f4146qqpy_e91.25_c94_2l_c2"
+    #nickname = "sh_kk2f4146qqpydcy_e91.25_c94_2l_c2"
+    #nickname = "sh_kk2f4146qqardcy_e91.25_r94_2l_c2"
+    #nickname = "sh_apacic105_e91.25_w94_2l_c2"
+    #nickname = "sh_zgpy_b94_2l_c2"
+
+    #nickname = "xsdst99_e192_e1"
+    #nickname = "xsdst99_e196_e1"
+    #nickname = "xsdst99_e200_e1"
+    #nickname = "xsdst99_e202_e1"
+    #nickname = "xs_kk2f4143qq_e191.6_r99_1l_e1"
+    #nickname = "xs_kk2f4143qq_e195.5_l99_1l_e1"
+    #nickname = "xs_kk2f4143qq_e199.5_c99_1l_e1"
+    #nickname = "xs_kk2f4143qq_e201.6_l99_1l_e1"
+    #nickname = "xs_wphact24cc_e191.6_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact24cc_e195.5_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact24cc_e199.5_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact24cc_e201.6_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact21nc4f_e191.6_m80.4_l99_1l_e1"
+    #nickname = "xs_wphact21nc4f_e195.5_m80.4_l99_1l_e1"
+    #nickname = "xs_wphact21nc4f_e199.5_m80.4_l99_1l_e1"
+    #nickname = "xs_wphact21nc4f_e201.6_m80.4_l99_1l_e1"
+    #nickname = "xs_wphact211ncgg_e191.6_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact211ncgg_e195.5_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact211ncgg_e199.5_m80.4_c99_1l_e1"
+    #nickname = "xs_wphact211ncgg_e201.6_m80.4_c99_1l_e1"
+    #nickname = "xs_kk2f4144tthl_e191.6_c99_1l_e1"
+    #nickname = "xs_kk2f4144tthl_e195.5_c99_1l_e1"
+    #nickname = "xs_kk2f4144tthl_e199.5_c99_1l_e1"
+    #nickname = "xs_kk2f4144tthl_e201.6_c99_1l_e1"
+    
 
     patterns, copy_dir, run_type = build_patterns(nickname)
     matched_files = find_matches(patterns)
+
+    copy_dir = copy_dir
 
     print(f"Found {len(matched_files)} files for '{nickname}':")
     for f in matched_files:

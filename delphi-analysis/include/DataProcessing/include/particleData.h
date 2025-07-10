@@ -138,8 +138,10 @@ class particleData{
   Bool_t passesArtificAccept[nMaxPart];
   float artificAcceptEffCorrection[nMaxPart];
   int anc[nMaxPart];
+  int index[nMaxPart];
+  int correspondenceIndex[nMaxPart];
     
-  static const int nVar = 103;
+  static const int nVar = 105;
   std::string varStr[nVar] = {"nParticle",
 			      "EventNo",
 			      "RunNo",
@@ -242,7 +244,9 @@ class particleData{
 			      "phi_wrtThrMissPPerp",
 			      "passesArtificAccept",
 			      "artificAcceptEffCorrection",
-            "anc"};
+			      "anc",
+			      "index",
+			      "correspondenceIndex"};
   
   bool varIsGood[nVar];
   
@@ -366,6 +370,8 @@ inline particleData::particleData(bool in_initMinimal) : initMinimal(in_initMini
     vy[i] = -999.;
     vz[i] = -999.;
     weight[i] = -999.;
+    index[i] = -999;
+    correspondenceIndex[i] = -999;
     
     if (!initMinimal)
     {
@@ -648,6 +654,8 @@ inline void particleData::SetStatusAndAddressRead(TTree* inTree_p, std::vector<s
   if(varIsGood[100]) inTree_p->SetBranchAddress("passesArtificAccept", passesArtificAccept);
   if(varIsGood[101]) inTree_p->SetBranchAddress("artificAcceptEffCorrection", artificAcceptEffCorrection);
   if(varIsGood[102]) inTree_p->SetBranchAddress("anc", anc);
+  if(varIsGood[103]) inTree_p->SetBranchAddress("index", index);
+  if(varIsGood[104]) inTree_p->SetBranchAddress("correspondenceIndex", correspondenceIndex);
   
     return;
 }
@@ -681,6 +689,8 @@ inline void particleData::SetBranchWrite(TTree* inTree_p, bool writeMinimal)
   inTree_p->Branch("d0", d0, "d0[nParticle]/F");
   inTree_p->Branch("z0", z0, "z0[nParticle]/F");
   inTree_p->Branch("weight", weight, "weight[nParticle]/F");
+  inTree_p->Branch("index", index, "index[nParticle]/I");
+  inTree_p->Branch("correspondenceIndex", correspondenceIndex, "correspondenceIndex[nParticle]/I");
   
   if (!writeMinimal)
   {
@@ -710,7 +720,6 @@ inline void particleData::SetBranchWrite(TTree* inTree_p, bool writeMinimal)
     inTree_p->Branch("passesArtificAccept", passesArtificAccept, "passesArtificAccept[nParticle]/O");
     inTree_p->Branch("artificAcceptEffCorrection", artificAcceptEffCorrection, "artificAcceptEffCorrection[nParticle]/F");
     inTree_p->Branch("anc", anc, "anc[nParticle]/I");
-
   }
   
   if (!writeMinimal && do_chThrust )           {
@@ -780,8 +789,6 @@ inline void particleData::SetBranchWrite(TTree* inTree_p, bool writeMinimal)
       inTree_p->Branch("phi_wrtThrMissPPerp", phi_wrtThrMissPPerp, "phi_wrtThrMissPPerp[nParticle]/F");
     }
   }
-
-    
   return;
 }
 
@@ -806,6 +813,8 @@ inline void particleData::preFillClean()
     vy[i] = reducedPrecision(vy[i]);
     vz[i] = reducedPrecision(vz[i]);
     weight[i] = reducedPrecision(weight[i]);
+    index[i] = reducedPrecision(index[i]);
+    correspondenceIndex[i] = reducedPrecision(correspondenceIndex[i]);
     
     if (!initMinimal)
     {
