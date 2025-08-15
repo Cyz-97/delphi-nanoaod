@@ -62,18 +62,18 @@ sh_zgpy_b94_2l_c2:
   copy_energy: "91.25" 
   extension: .al
 
-sh_zgpy_b94_2l_c2:
+sh_qqps_k94_2l_c2:
   type: sim
   subdirs: [Y10096, Y10097, Y10098, Y10502]
   file_patterns:
     - subdir: Y10096
-      pattern: "Y10098.[1-240].al"
+      pattern: "Y10096.[1-240].al"
     - subdir: Y10097
-      pattern: "Y10098.[1-238].al"
+      pattern: "Y10097.[1-238].al"
     - subdir: Y10098
       pattern: "Y10098.[1-240].al"
     - subdir: Y10502
-      pattern: "Y10098.[1-201].al"
+      pattern: "Y10502.[1-201].al"
   stream: qqps
   version: v94c        
   energy: "91.25"      

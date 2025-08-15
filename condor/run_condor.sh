@@ -34,13 +34,13 @@ else
 fi
 
 # Run treefy step
-root -q -b -l "treefy.C+(\"$2\")"
+#root -q -b -l "treefy.C+(\"$2\")"
 
 # Move the output ROOT file to desired location
 tpc="$2"
-nanotree="${tpc/.root/_ttree.root}"
+#nanotree="${tpc/.root/_ttree.root}"
 
 mv "$tpc" "$3"
-mv "$nanotree" "$3"
+#mv "$nanotree" "$3"
 
 

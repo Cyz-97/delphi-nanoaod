@@ -124,11 +124,12 @@ if __name__ == "__main__":
     
     #nickname = "short94_c2"
     #nickname = "sh_qqps_e91.25_c94_2l_c2"
-    nickname = "sh_kk2f4146qqpy_e91.25_c94_2l_c2"
+    #nickname = "sh_kk2f4146qqpy_e91.25_c94_2l_c2"
     #nickname = "sh_kk2f4146qqpydcy_e91.25_c94_2l_c2"
     #nickname = "sh_kk2f4146qqardcy_e91.25_r94_2l_c2"
     #nickname = "sh_apacic105_e91.25_w94_2l_c2"
     #nickname = "sh_zgpy_b94_2l_c2"
+    #nickname = "sh_qqps_k94_2l_c2"
 
     #nickname = "xsdst99_e192_e1"
     #nickname = "xsdst99_e196_e1"
@@ -155,7 +156,6 @@ if __name__ == "__main__":
     #nickname = "xs_kk2f4144tthl_e199.5_c99_1l_e1"
     #nickname = "xs_kk2f4144tthl_e201.6_c99_1l_e1"
     
-
     patterns, copy_dir, run_type = build_patterns(nickname)
     matched_files = find_matches(patterns)
 
@@ -166,9 +166,7 @@ if __name__ == "__main__":
         print(f)
     print(f"Copy directory: {copy_dir}")
 
-    os.makedirs(copy_dir, exist_ok=True)
-
-    # Pause for manual check
+    os.makedirs(copy_dir, exist_ok=True)    # Pause for manual check
     input("👉 Press Enter to start job submission...")
     
     for f in matched_files:
