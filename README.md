@@ -40,13 +40,13 @@ cmake -B build
 # Build the software
 cmake --build build
 
-# Run
+# Run test
 python3 python/run.py
 
 # Batch production
 Edit condor/sample_list.yaml
 Edit condor/submit_nano.py
-python3 submit_nano.py
+python3 condor/submit_nano.py
 ```
 
 # on SVMIT03
