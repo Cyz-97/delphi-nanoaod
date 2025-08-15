@@ -47,5 +47,8 @@ cd delphi-nanoaod
 cmake -B build
 
 # Build the software
-cmake --build build 
+cmake --build build
+
+# Run
+python3 python/run.py
 ```
