@@ -59,6 +59,16 @@ def build_patterns(nickname):
         else:
             copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["energy"] / cfg["stream"]
         TYPE = "MC"
+    elif cfg["stream"] == "pythia8":
+        pattern = f"/eos/user/z/zhangj/DELPHI/simulation/{cfg['version']}/{cfg['energy']}/pythia8_sdst_v2/simana*sdst"
+        patterns = [pattern]
+        copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["energy"] / cfg["stream"]
+        TYPE = "MC"
+    elif cfg["stream"] == "pythia8_dire":
+        pattern = f"/eos/user/z/zhangj/DELPHI/simulation/{cfg['version']}/{cfg['energy']}/pythia8_dire_sdst/simana*sdst"
+        patterns = [pattern]
+        copy_dir = user_output_base / "simulation" / cfg["version"] / cfg["energy"] / cfg["stream"]
+        TYPE = "MC"
     else:
         # Original sim type logic
         pattern = str(
@@ -117,7 +127,7 @@ if __name__ == "__main__":
     min_bytes = 100_000      # 100 KB
     max_days = 3
 
-    MAX_QUEUE = 100
+    MAX_QUEUE = 200
     USER = os.environ["USER"]
 
     config = load_config()
@@ -130,6 +140,8 @@ if __name__ == "__main__":
     #nickname = "sh_apacic105_e91.25_w94_2l_c2"
     #nickname = "sh_zgpy_b94_2l_c2"
     #nickname = "sh_qqps_k94_2l_c2"
+    #nickname = "sh_pythia8"
+    nickname = "sh_pythia8_dire"
 
     #nickname = "xsdst99_e192_e1"
     #nickname = "xsdst99_e196_e1"

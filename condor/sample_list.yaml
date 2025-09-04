@@ -62,6 +62,22 @@ sh_zgpy_b94_2l_c2:
   copy_energy: "91.25" 
   extension: .al
 
+sh_pythia8:
+  type: sim
+  stream: pythia8  
+  version: v94c        
+  energy: "91.25"      
+  copy_energy: "91.25" 
+  extension: .sdst
+
+sh_pythia8_dire:
+  type: sim
+  stream: pythia8_dire  
+  version: v94c        
+  energy: "91.25"      
+  copy_energy: "91.25" 
+  extension: .sdst
+
 sh_qqps_k94_2l_c2:
   type: sim
   subdirs: [Y10096, Y10097, Y10098, Y10502]
