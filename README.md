@@ -69,7 +69,7 @@ The main executable is:
 
 **Input Types:**
 - **Nickname:** Refers to DELPHI FATMEN sample names
-- **PDL input:** Should follow the format `./dummy`
+- **PDL input:** Should follow the format in `./dummy`
   
 ## 🏭 Batch Production
 
@@ -94,14 +94,14 @@ Edit condor/submit_nano.py to specify the FATMEN nickname you want to process.
 ```
 python3 condor/submit_nano.py
 ```
-📝 Note: You will need to update the relevant path in condor/run_condor.sh and condor/submit_nano.py to match your input and output path. 
+📝 Note: You will need to update the relevant path in `condor/run_condor.sh` and `condor/submit_nano.py` to match your input and output path. 
 
 #### ⚡ Quick start example: 
 The default setting converts the DELPHI official tautau sample to ROOT. 
 ```
 python3 condor/submit_nano.py
 ```
-📝 Note: You will need to update the relevant path in condor/run_condor.sh and condor/submit_nano.py to match your input and output path. 
+📝 Note: You will need to update the relevant path in `condor/run_condor.sh` and `condor/submit_nano.py` to match your input and output path. 
 
 # on SVMIT03
 
