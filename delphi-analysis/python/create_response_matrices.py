@@ -32,29 +32,47 @@ class MyResponse:
         for key in self._resps.keys():
             self._resps[key].Write()
 
-        cov_hist = ROOT.TH2D(
+        cov_hist_r = ROOT.TH2D(
             f"covariance_matrix_r", 
             f"EEC r Covariance Matrix",
+            self._total_bins, 0.5, self._total_bins + 0.5,
+            self._total_bins, 0.5, self._total_bins + 0.5
+        )
+
+        cov_hist_z = ROOT.TH2D(
+            f"covariance_matrix_z", 
+            f"EEC z Covariance Matrix",
             self._total_bins, 0.5, self._total_bins + 0.5,
             self._total_bins, 0.5, self._total_bins + 0.5
         )
         
         for i in range(self._total_bins):
             for j in range(self._total_bins):
-                cov_hist.SetBinContent(i + 1, j + 1, self._sum_of_eec_products[i, j])
+                cov_hist_r.SetBinContent(i + 1, j + 1, self._sum_of_eec_products_r[i, j])
+                cov_hist_z.SetBinContent(i + 1, j + 1, self._sum_of_eec_products_z[i, j])
         
         # Also save the mean EEC as a histogram
-        mean_hist = ROOT.TH1D(
+        mean_hist_r = ROOT.TH1D(
             f"mean_eec_r",
             f"Mean EEC r",
             self._total_bins, 0.5, self._total_bins + 0.5
         )
+
+        mean_hist_z = ROOT.TH1D(
+            f"mean_eec_z",
+            f"Mean EEC z",
+            self._total_bins, 0.5, self._total_bins + 0.5
+        )
         
         for i in range(self._total_bins):
-            mean_hist.SetBinContent(i + 1, self._sum_of_eecs[i])
+            mean_hist_r.SetBinContent(i + 1, self._sum_of_eecs_r[i])
+            mean_hist_z.SetBinContent(i + 1, self._sum_of_eecs_z[i])
 
-        cov_hist.Write()
-        mean_hist.Write()
+        cov_hist_r.Write()
+        mean_hist_r.Write()
+
+        cov_hist_z.Write()
+        mean_hist_z.Write()
             
         fout.Close()
 
@@ -165,12 +183,17 @@ class MyResponse:
             for name, (xe, ye) in h2d_defs.items()
         })
 
-        self._template_hist=self._hists["reco2d_eij_r"]
-        self._nx = self._template_hist.GetNbinsX() + 2  # +2 for under/overflow
-        self._ny = self._template_hist.GetNbinsY() + 2  # +2 for under/overflow  
+        self._template_hist_r=self._hists["reco2d_eij_r"]
+        self._template_hist_z=self._hists["reco2d_eij_z"]
+        self._nx = self._template_hist_r.GetNbinsX() + 2  # +2 for under/overflow
+        self._ny = self._template_hist_r.GetNbinsY() + 2  # +2 for under/overflow  
         self._total_bins = self._nx * self._ny
-        self._sum_of_eecs=np.zeros(self._total_bins)
-        self._sum_of_eec_products = np.zeros((self._total_bins, self._total_bins)) 
+
+        self._sum_of_eecs_r=np.zeros(self._total_bins)
+        self._sum_of_eec_products_r = np.zeros((self._total_bins, self._total_bins)) 
+
+        self._sum_of_eecs_z=np.zeros(self._total_bins)
+        self._sum_of_eec_products_z = np.zeros((self._total_bins, self._total_bins)) 
 
     def bookResponseMatrices(self):
 
@@ -247,6 +270,9 @@ class MyResponse:
 
         nevt = self._treco.GetEntries()
         for ievt in range(nevt):
+
+            if ievt % 1000 == 0:
+                print(f"Processing event {ievt}/{nevt}")
 
             treco, tgen = self._treco, self._tgen
             treco.GetEntry(ievt)
@@ -497,7 +523,8 @@ class MyResponse:
             # ----------------------------------------------------------------------
             # ➌ fake reconstructed pairs (both in ‘ifake’ **or** one in ifake)
             # ----------------------------------------------------------------------
-            event_pairs = []
+            event_pairs_r = []
+            event_pairs_z = []
             for k, i_rec in enumerate(ifake):
                 self._hists['fake_e'].Fill(rec_c.e[i_rec])
                 self._hists['reco_e'].Fill(rec_c.e[i_rec])
@@ -515,7 +542,8 @@ class MyResponse:
                     self._hists['reco1d_eec_r'].Fill(r, Eij)
                     self._hists['reco1d_eec_z'].Fill(z, Eij)
 
-                    event_pairs.append((r, Eij, 1))
+                    event_pairs_r.append((r, Eij, 1))
+                    event_pairs_z.append((z, Eij, 1))
             
                 # mix : one index fake, one matched
                 for j_rec in ireco:
@@ -534,12 +562,17 @@ class MyResponse:
                     self._hists['reco2d_eij_r'].Fill(r, Eij)
                     self._hists['reco2d_eij_z'].Fill(z, Eij)
 
-                    event_pairs.append((r, Eij, 1))
+                    event_pairs_r.append((r, Eij, 1))
+                    event_pairs_z.append((z, Eij, 1))
 
-            event_eec = calculate_event_eec_histogram(event_pairs, self._template_hist, self._nx, self._ny)
+            event_eec_r = calculate_event_eec_histogram(event_pairs_r, self._template_hist_r, self._nx, self._ny)
+            event_eec_z = calculate_event_eec_histogram(event_pairs_z, self._template_hist_z, self._nx, self._ny)
 
-            self._sum_of_eecs += event_eec
-            self._sum_of_eec_products += np.outer(event_eec, event_eec)        
+            self._sum_of_eecs_r += event_eec_r
+            self._sum_of_eec_products_r += np.outer(event_eec_r, event_eec_r) 
+
+            self._sum_of_eecs_z += event_eec_z
+            self._sum_of_eec_products_z += np.outer(event_eec_z, event_eec_z)        
 
     def findBin(self, bin_edges, value):
         bin_index = np.digitize(value, bin_edges) - 1

@@ -201,9 +201,15 @@ if __name__ == "__main__":
     print(f"Covariance matrix will be {total_bins}x{total_bins}")
     print(f"Using weights: {args.use_weights}")
 
+    template_hist_r = h2d["EEC2d_r"]
+    template_hist_z = h2d["EEC2d_z"]
+
     # Initialize covariance calculation following your algorithm
-    sum_of_eecs = np.zeros(total_bins)                      # Sum of eec^(k) vectors
-    sum_of_eec_products = np.zeros((total_bins, total_bins)) # Sum of eec^(k)[i] * eec^(k)[j]
+    sum_of_eecs_r = np.zeros(total_bins)                      # Sum of eec^(k) vectors
+    sum_of_eec_products_r = np.zeros((total_bins, total_bins)) # Sum of eec^(k)[i] * eec^(k)[j]
+
+    sum_of_eecs_z = np.zeros(total_bins)                      # Sum of eec^(k) vectors
+    sum_of_eec_products_z = np.zeros((total_bins, total_bins)) # Sum of eec^(k)[i] * eec^(k)[j]
 
     N=0
 
@@ -213,10 +219,9 @@ if __name__ == "__main__":
             
         t_hadrons.GetEntry(iEvt)
 
-        try:
-            E   = t_hadrons.Energy
-        except:
-            E = 91.25
+        
+        E   = t_hadrons.Energy
+        if abs(E - 91.25) > 1: continue
             
         get = lambda *names: (np.array(getattr(t_hadrons,n)) for n in names)
 
@@ -365,7 +370,8 @@ if __name__ == "__main__":
 
             # ===== COVARIANCE CALCULATION =====
             # Step 1: Calculate single-event EEC histogram eec^(k)
-            event_pairs = []
+            event_pairs_r = []
+            event_pairs_z = []
             
             for idx_i, idx_j in zip(iu, ju):
                 # Get the values we need
@@ -386,18 +392,24 @@ if __name__ == "__main__":
                     weight = 1.0
                 
                 # Store for covariance calculation (jacobian_val for binning, eij_val as weight)
-                event_pairs.append((jacobian_val, eij_val, weight))
+                event_pairs_r.append((r_val, eij_val, weight))
+                event_pairs_z.append((z_val, eij_val, weight))
                 
                 # Fill normal histograms
                 fill_pair(idx_i, idx_j, r_val, z_val, eij_val, q_c, HISTS, weight)
             
             # Step 2: Calculate this event's EEC histogram eec^(k)
-            event_eec = calculate_event_eec_histogram(event_pairs, template_hist, nx, ny)
+            event_eec_r = calculate_event_eec_histogram(event_pairs_r, template_hist_r, nx, ny)
+            event_eec_z = calculate_event_eec_histogram(event_pairs_z, template_hist_z, nx, ny)
             
             # Step 3: Add to running sums following your algorithm
-            sum_of_eecs += event_eec
+            sum_of_eecs_r += event_eec_r
             # Calculate outer product eec^(k)[i] * eec^(k)[j] and add to running sum
-            sum_of_eec_products += np.outer(event_eec, event_eec)
+            sum_of_eec_products_r += np.outer(event_eec_r, event_eec_r)
+
+            sum_of_eecs_z += event_eec_z
+            # Calculate outer product eec^(k)[i] * eec^(k)[j] and add to running sum
+            sum_of_eec_products_z += np.outer(event_eec_z, event_eec_z)
 
         N += 1
 
@@ -412,10 +424,10 @@ if __name__ == "__main__":
         print(f"Calculating covariance matrix from {N_events} events")
         
         # Step 4a: Calculate average EEC: <EEC> = Sum_of_eecs / N
-        mean_eec = sum_of_eecs / N_events
+        mean_eec = sum_of_eecs_r / N_events
         
         # Step 4b: Calculate average of products: <EEC_i * EEC_j> = Sum_of_eec_products[i][j] / N
-        mean_products = sum_of_eec_products / N_events
+        mean_products = sum_of_eec_products_r / N_events
         
         # Step 4c: Calculate covariance using your formula:
         # Cov(<EEC_i>, <EEC_j>) = (1 / (N * (N-1))) * [Sum_of_eec_products[i][j] - (1/N) * Sum_of_eecs[i] * Sum_of_eecs[j]]
@@ -423,7 +435,7 @@ if __name__ == "__main__":
         # First calculate: Sum_of_eec_products[i][j] - (1/N) * Sum_of_eecs[i] * Sum_of_eecs[j]
         # This is: N * mean_products - (1/N) * sum_of_eecs * sum_of_eecs^T
         #        = N * mean_products - (1/N) * np.outer(sum_of_eecs, sum_of_eecs)
-        numerator = sum_of_eec_products - (1.0/N_events) * np.outer(sum_of_eecs, sum_of_eecs)
+        numerator = sum_of_eec_products_r - (1.0/N_events) * np.outer(sum_of_eecs_r, sum_of_eecs_r)
         
         # Then divide by (N * (N-1)) for the covariance of the sample mean
         covariance_matrix = numerator / (N_events * (N_events - 1))
@@ -436,31 +448,46 @@ if __name__ == "__main__":
         
         # Convert to ROOT histogram and save
         weight_suffix = "_weighted" if args.use_weights else ""
-        cov_hist = ROOT.TH2D(
-            f"covariance_matrix_{jacobian_var}{weight_suffix}", 
-            f"EEC {jacobian_var} Covariance Matrix (N={N_events}){weight_suffix}",
+        cov_hist_r = ROOT.TH2D(
+            f"covariance_matrix_r", 
+            f"EEC r Covariance Matrix (N={N_events}){weight_suffix}",
+            total_bins, 0.5, total_bins + 0.5,
+            total_bins, 0.5, total_bins + 0.5
+        )
+
+        cov_hist_z = ROOT.TH2D(
+            f"covariance_matrix_z", 
+            f"EEC z Covariance Matrix (N={N_events}){weight_suffix}",
             total_bins, 0.5, total_bins + 0.5,
             total_bins, 0.5, total_bins + 0.5
         )
         
         for i in range(total_bins):
             for j in range(total_bins):
-                cov_hist.SetBinContent(i + 1, j + 1, sum_of_eec_products[i, j])
+                cov_hist_r.SetBinContent(i + 1, j + 1, sum_of_eec_products_r[i, j])
+                cov_hist_z.SetBinContent(i + 1, j + 1, sum_of_eec_products_z[i, j])
         
         # Also save the mean EEC as a histogram
-        mean_hist = ROOT.TH1D(
-            f"mean_eec_{jacobian_var}{weight_suffix}",
-            f"Mean EEC {jacobian_var} Distribution (N={N_events}){weight_suffix}",
+        mean_hist_r = ROOT.TH1D(
+            f"mean_eec_r{weight_suffix}",
+            f"Mean EEC r Distribution (N={N_events}){weight_suffix}",
+            total_bins, 0.5, total_bins + 0.5
+        )
+
+        mean_hist_z = ROOT.TH1D(
+            f"mean_eec_z{weight_suffix}",
+            f"Mean EEC z Distribution (N={N_events}){weight_suffix}",
             total_bins, 0.5, total_bins + 0.5
         )
         
         for i in range(total_bins):
-            mean_hist.SetBinContent(i + 1, sum_of_eecs[i])
+            mean_hist_r.SetBinContent(i + 1, sum_of_eecs_r[i])
+            mean_hist_z.SetBinContent(i + 1, sum_of_eecs_z[i])
         
         # Save binning information for later use
         bin_info = ROOT.TH1D(
-            f"bin_info_{jacobian_var}{weight_suffix}",
-            f"Binning Info for {jacobian_var}{weight_suffix}",
+            f"bin_info_r{weight_suffix}",
+            f"Binning Info for r{weight_suffix}",
             5, 0, 5
         )
         bin_info.SetBinContent(1, template_hist.GetNbinsX())  # nx (without overflow)
@@ -473,9 +500,6 @@ if __name__ == "__main__":
 
     else:
         print("ERROR: Need at least 2 events for covariance calculation!")
-        cov_hist = None
-        mean_hist = None
-        bin_info = None
 
     # Write results
     fout.cd()
@@ -488,17 +512,14 @@ if __name__ == "__main__":
     # Always write covariance results if they exist
     weight_suffix = "_weighted" if args.use_weights else ""
     
-    if 'cov_hist' in locals() and cov_hist:
-        cov_hist.Write()
-        print(f"✅ Wrote covariance matrix: {cov_hist.GetName()}")
+    cov_hist_r.Write()
+    mean_hist_r.Write()
+
+    cov_hist_z.Write()
+    mean_hist_z.Write()
         
-    if 'mean_hist' in locals() and mean_hist:
-        mean_hist.Write()
-        print(f"✅ Wrote mean EEC: {mean_hist.GetName()}")
-        
-    if 'bin_info' in locals() and bin_info:
-        bin_info.Write()
-        print(f"✅ Wrote bin info: {bin_info.GetName()}")
+    bin_info.Write()
+    print(f"✅ Wrote bin info: {bin_info.GetName()}")
 
     crosscheck, mapping=flatten_2d_histogram_with_overflow(h2d['EEC2d_r'])
     crosscheck.Write()
@@ -507,20 +528,17 @@ if __name__ == "__main__":
     print(f"Output written to {args.outfile}")
     
     # Final summary
-    if 'cov_hist' in locals() and cov_hist:
-        print(f"\n=== COVARIANCE CALCULATION COMPLETE ===")
-        print(f"ROOT file: {args.outfile}")
-        print(f"  - covariance_matrix_{jacobian_var}{weight_suffix}")
-        print(f"  - mean_eec_{jacobian_var}{weight_suffix}")
-        print(f"  - bin_info_{jacobian_var}{weight_suffix}")
-        print(f"\nCovariance matrix details:")
-        print(f"  - Jacobian variable: {jacobian_var}")
-        print(f"  - Template bins (no overflow): {template_hist.GetNbinsX()}x{template_hist.GetNbinsY()}")
-        print(f"  - Total bins (with overflow): {nx}x{ny} = {total_bins}")
-        print(f"  - Events analyzed: {N_events}")
-        print(f"  - Using weights: {args.use_weights}")
-        print(f"  - Covariance matrix: {total_bins}x{total_bins}")
-        print(f"  - Algorithm: Cov(<EEC_i>, <EEC_j>) = (1/(N*(N-1))) * [Sum_products - (1/N)*Sum_i*Sum_j]")
-        print(f"  - Flattening: flat_bin = i * {ny} + j (eij changes fastest)")
-    else:
-        print(f"❌ No covariance matrix was created - check that events passed selection!")
+    print(f"\n=== COVARIANCE CALCULATION COMPLETE ===")
+    print(f"ROOT file: {args.outfile}")
+    print(f"  - covariance_matrix_{jacobian_var}{weight_suffix}")
+    print(f"  - mean_eec_{jacobian_var}{weight_suffix}")
+    print(f"  - bin_info_{jacobian_var}{weight_suffix}")
+    print(f"\nCovariance matrix details:")
+    print(f"  - Jacobian variable: {jacobian_var}")
+    print(f"  - Template bins (no overflow): {template_hist.GetNbinsX()}x{template_hist.GetNbinsY()}")
+    print(f"  - Total bins (with overflow): {nx}x{ny} = {total_bins}")
+    print(f"  - Events analyzed: {N_events}")
+    print(f"  - Using weights: {args.use_weights}")
+    print(f"  - Covariance matrix: {total_bins}x{total_bins}")
+    print(f"  - Algorithm: Cov(<EEC_i>, <EEC_j>) = (1/(N*(N-1))) * [Sum_products - (1/N)*Sum_i*Sum_j]")
+    print(f"  - Flattening: flat_bin = i * {ny} + j (eij changes fastest)")

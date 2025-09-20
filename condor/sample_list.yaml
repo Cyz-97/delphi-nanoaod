@@ -96,6 +96,31 @@ sh_qqps_k94_2l_c2:
   copy_energy: "91.25" 
   extension: .al
 
+sh_kk2f4146tthl_e91.25_c94_2l_c2:
+  type: sim
+  stream: kk2f4146_tthl
+  origin: cern
+  version: v94c
+  energy: "91.25"
+  copy_energy: "91.25"
+  extension: .sdst
+
+short95_d2:
+  type: data
+  subdirs: [Y13716]
+  version: v95d        
+  energy: "91.25"      
+  extension: .al
+
+sh_kk2f4146qqpy_e91.25_c95_1l_d2:
+  type: sim
+  stream: kk2f4146_qqpy
+  origin: cern
+  version: v95d
+  energy: "91.25"
+  copy_energy: "91.25"
+  extension: .sdst
+
 xsdst99_e192_e1:
   subdirs: [R05096]
   type: data

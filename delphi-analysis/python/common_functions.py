@@ -544,6 +544,64 @@ def thrust_theta(axis_vec, thrust_val, fold=True):
         cos_th = abs(cos_th)
     return np.arccos(np.clip(cos_th, -1.0, 1.0))
 
+def heavy_jet_mass(p4: np.ndarray, 
+                   thrust_axis: np.ndarray,
+                   eps: float = 1e-12) -> float:
+    """
+    Calculate heavy jet mass using thrust axis.
+    
+    Heavy jet mass is defined as the greater of the invariant masses 
+    of two hemispheres separated by the plane normal to the thrust axis.
+    
+    Args:
+        p4: 4-momentum array of shape (n_particles, 4) where columns are [E, px, py, pz]
+        thrust_axis: 3D thrust axis vector (should be normalized)
+        eps: Small number for numerical stability
+        
+    Returns:
+        heavy_jet_mass: The larger invariant mass of the two hemispheres
+    """
+    if len(p4) == 0:
+        return 0.0
+    
+    # Extract 3-momentum and energy
+    p3 = p4[:, 1:]  # [px, py, pz]
+    E = p4[:, 0]    # energy
+    
+    # Normalize thrust axis just to be safe
+    thrust_norm = np.linalg.norm(thrust_axis)
+    if thrust_norm < eps:
+        return 0.0
+    n_thrust = thrust_axis / thrust_norm
+    
+    # Project momenta onto thrust axis to determine hemispheres
+    projections = p3 @ n_thrust  # p⃗ · n̂_thrust
+    
+    # Separate into two hemispheres
+    hemisphere_pos = projections > 0
+    hemisphere_neg = projections <= 0
+    
+    # Handle edge case where all particles are in one hemisphere
+    if not np.any(hemisphere_pos) or not np.any(hemisphere_neg):
+        # All particles in one hemisphere - return total invariant mass
+        total_p4 = p4.sum(axis=0)
+        return np.sqrt(max(0, total_p4[0]**2 - np.sum(total_p4[1:]**2)))
+    
+    # Calculate invariant mass for each hemisphere
+    def invariant_mass(mask):
+        if not np.any(mask):
+            return 0.0
+        hemisphere_p4 = p4[mask].sum(axis=0)  # Sum 4-momenta
+        E_sum = hemisphere_p4[0]
+        p_sum = hemisphere_p4[1:]
+        mass_sq = E_sum**2 - np.sum(p_sum**2)
+        return np.sqrt(max(0, mass_sq))  # Protect against numerical errors
+    
+    mass_pos = invariant_mass(hemisphere_pos)
+    mass_neg = invariant_mass(hemisphere_neg)
+    
+    return max(mass_pos, mass_neg)
+
 def sphericity_nonlinear(px: np.ndarray,
                          py: np.ndarray,
                          pz: np.ndarray):

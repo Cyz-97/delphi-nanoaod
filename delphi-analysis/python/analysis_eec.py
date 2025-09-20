@@ -13,6 +13,8 @@ h0 = ROOT.TH1D("N", "", 2, 0, 2)
 
 # 1) Define all your 1D histos and their bin edges
 h1d_defs = {
+    "ETotal"        : np.linspace(0, 300, 301),     
+
     "EEC_r"         : rbins,
     "EEC_z"         : zbins,
     "EEC_r_trkSele" : rbins,
@@ -58,19 +60,20 @@ h1d_defs = {
 
     "TrackE"        : ebins,
     "TrackPT"       : np.linspace(0, 100, 1001),
-    "NuetralE"        : np.linspace(0, 100, 1001),
+    "NuetralE"      : np.linspace(0, 100, 1001),
     "SumE"          : np.linspace(0, 200, 2001),
     "SumTrackE"     : np.linspace(0, 200, 2001),
     "TrackTheta"    : np.linspace(0, 180, 181),
-    "TrackPhi"    : np.linspace(0, 180, 181),
+    "TrackPhi"      : np.linspace(0, 180, 181),
 
     "TrackESele"    : ebins,
     "TrackPTSele"   : np.linspace(0, 100, 1001),
-    "NuetralESele"    : np.linspace(0, 100, 1001),
+    "NuetralESele"  : np.linspace(0, 100, 1001),
     "SumESele"      : np.linspace(0, 200, 2001),
+    "HJM"           : np.linspace(0, 200, 2001),
     "SumTrackESele" : np.linspace(0, 200, 2001),
     "TrackThetaSele": np.linspace(0, 180, 181),
-    "TrackPhiSele": np.linspace(0, 180, 181),
+    "TrackPhiSele"  : np.linspace(0, 180, 181),
     "NuetralThetaSele": np.linspace(0, 180, 181),
     "NuetralPhiSele": np.linspace(0, 180, 181),
     
@@ -136,7 +139,7 @@ def calc_weight(pt):
     return np.where(
         pt < 30, 
         1,
-        np.where(pt <= 45, pt/15. - 1, 2)
+        np.where(pt <= 50, pt/30., 1./0.6)
     )
 
 def calculate_event_eec_histogram(pairs_data, temp_hist, n):
@@ -215,10 +218,8 @@ if __name__ == "__main__":
             
         t_hadrons.GetEntry(iEvt)
 
-        try:
-            E   = t_hadrons.Energy
-        except:
-            E = 91.25
+        E   = t_hadrons.Energy
+        if abs(E - 91.25) > 1: continue
             
         get = lambda *names: (np.array(getattr(t_hadrons,n)) for n in names)
 
@@ -262,6 +263,7 @@ if __name__ == "__main__":
         e  = np.sqrt(px**2 + py**2 + pz**2 + m**2)
         if isGen and np.sum(e)>E+0.1: continue
         h0.Fill(0.5)
+        h1d["ETotal"].Fill(E)
         h1d["SumE"].Fill(np.sum(e))
         h1d["NPart"].Fill(len(px))
 
@@ -338,6 +340,8 @@ if __name__ == "__main__":
         )
         e_nc  = np.sqrt(px_nc**2 + py_nc**2 + pz_nc**2 + m_nc**2)
         p3_nc = np.stack((px_nc, py_nc, pz_nc), axis=1)
+
+        p4_nc = np.stack((e_nc, px_nc, py_nc, pz_nc), axis=1)
 
         px_n, py_n, pz_n, m_n, th_n, phi_n = (
             v3[sel_n] for v3 in (px, py, pz, m, th, phi)
@@ -422,6 +426,9 @@ if __name__ == "__main__":
             h1d["ThrustNCLog"].Fill(np.log(1-T_nc))
             h1d["ThrustMissPNCLog"].Fill(np.log(1-T_nc_met))
             h1d["ThrustMissPNCLog2"].Fill(np.log(1-T_nc_met))
+
+            M_h = heavy_jet_mass(p4_nc, axis_nc_met)
+            h1d["HJM"].Fill(M_h)
 
             # ===== COVARIANCE CALCULATION =====
             # Step 1: Calculate single-event EEC histogram eec^(k)
