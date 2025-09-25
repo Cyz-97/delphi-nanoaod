@@ -519,26 +519,9 @@ if __name__ == "__main__":
     mean_hist_z.Write()
         
     bin_info.Write()
-    print(f"✅ Wrote bin info: {bin_info.GetName()}")
 
     crosscheck, mapping=flatten_2d_histogram_with_overflow(h2d['EEC2d_r'])
     crosscheck.Write()
 
     fout.Close()
     print(f"Output written to {args.outfile}")
-    
-    # Final summary
-    print(f"\n=== COVARIANCE CALCULATION COMPLETE ===")
-    print(f"ROOT file: {args.outfile}")
-    print(f"  - covariance_matrix_{jacobian_var}{weight_suffix}")
-    print(f"  - mean_eec_{jacobian_var}{weight_suffix}")
-    print(f"  - bin_info_{jacobian_var}{weight_suffix}")
-    print(f"\nCovariance matrix details:")
-    print(f"  - Jacobian variable: {jacobian_var}")
-    print(f"  - Template bins (no overflow): {template_hist.GetNbinsX()}x{template_hist.GetNbinsY()}")
-    print(f"  - Total bins (with overflow): {nx}x{ny} = {total_bins}")
-    print(f"  - Events analyzed: {N_events}")
-    print(f"  - Using weights: {args.use_weights}")
-    print(f"  - Covariance matrix: {total_bins}x{total_bins}")
-    print(f"  - Algorithm: Cov(<EEC_i>, <EEC_j>) = (1/(N*(N-1))) * [Sum_products - (1/N)*Sum_i*Sum_j]")
-    print(f"  - Flattening: flat_bin = i * {ny} + j (eij changes fastest)")

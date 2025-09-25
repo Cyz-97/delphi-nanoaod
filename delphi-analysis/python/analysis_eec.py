@@ -169,7 +169,7 @@ if __name__ == "__main__":
     filename = '/eos/user/z/zhangj/DELPHI/simulation/v94c/91.25/kk2f4146_qqpy/nanoaod_kk2f4146_qqpy_91.25_40001.sdst.root'
     #filename = "/afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod/nanoaod_pythia8_1.root"
     filenameout = 'h_test_with_covariance.root'
-    isGen = False
+    isGen = True
     doChargedThrust = False
     
     parser = argparse.ArgumentParser()
