@@ -61,15 +61,72 @@ tbins = np.array(tbins)
 logtbins = np.array(logtbins)
 
 if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(description='RooUnfold unfolding script')
+    parser.add_argument('--mode', type=str, default='thrustDelphi', 
+                        choices=['thrustDelphi', 'thrust', 'thrustCDelphi'],
+                        help='Unfolding mode: thrustDelphi or thrust')
+    parser.add_argument('--iterations', type=int, default=6,
+                        help='Number of iterations for Bayesian unfolding')
+    
+    args = parser.parse_args()
 
-    #filenamein = "response_kk2f4146_qqpy_91.25_v14.root"
+    # Set histogram names based on mode
+    if args.mode == 'thrustDelphi':
+        response_name = "response_thrustDelphi"
+        reco_name = 'reco_thrustDelphi'
+        gen_name = "gen_thrustDelphi"
+        dataname = 'ThrustMissPNCDelphi'
+        tag = 'thrustDelphi'
+        #dataname = 'reco_thrustDelphi'
+    elif args.mode == 'thrustCDelphi':
+        response_name = "response_thrustDelphi_c"
+        reco_name = 'reco_thrustDelphi_c'
+        gen_name = "gen_thrustDelphi_c"
+        dataname = 'ThrustCDelphi'
+        tag = 'thrustCDelphi'        
+    else:  # thrust
+        response_name = "response_thrust_log2"
+        reco_name = 'reco_thrust_log2'
+        gen_name = "gen_thrust_log2"
+        dataname='ThrustMissPNCLog2'
+        tag = 'thrust'
+
+    #datafile = 'h_94c_v35.root'
+
+    filenamein = "response_kk2f4146_qqpy_91.25_thrust_v36.root"
+    filenameout = f"unfolded_data_{tag}_kk2f4146_qqpy_91.25_v36.root"
+
+    #filenamein = "response_kk2f4146_qqardcy_91.25_thrust_v35.root"
+    #filenameout = f"unfolded_data_{tag}_kk2f4146_qqardcy_91.25_v35.root"
+
+    #filenamein = "response_pythia8_91.25_thrust_v35.root"
+    #filenameout = f"unfolded_data_{tag}_pythia8_91.25_v35.root"
+
+    #filenamein = "response_pythia8_dire_91.25_thrust_v35.root"
+    #filenameout = f"unfolded_data_{tag}_pythia8_dire_91.25_v35.root"
+
+
+    datafile = 'h_94c_v36.root'
+
+    #filenamein = "response_kk2f4146_qqpy_91.25_95d_thrust_v35.root"
+    #filenameout = f"unfolded_data_{tag}_kk2f4146_qqpy_sys_91.25_95d_v35.root"
+
+    #filenamein = "response_pythia8_91.25_95d_thrust_v35.root"
+    #filenameout = f"unfolded_data_{tag}_pythia8_91.25_95d_v35.root"
+
+    #filenamein = "response_pythia8_dire_91.25_95d_thrust_v35.root"
+    #filenameout = f"unfolded_data_{tag}_pythia8_dire_91.25_95d_v35.root"
+
+    #filenamein = "response_kk2f4146_qqpy_91.25_v17.root"
     #filenamein = "response_kk2f4146_qqardcy_91.25_v1.root"
     #filenamein = "response_apacic105_91.25_v1.root"
-    filenamein = "response_pythia8_91.25_v2.root"
+    #filenamein = "response_pythia8_91.25_v3.root"
     #filenamein = "response_pythia8_dire_91.25_v1.root"
-
-    datafile = 'h_94c_v5.root'
-    dataname = 'ThrustMissPNCLog2'
+    
+    #datafile = 'h_pythia8_v10.root'
+    #datafile = 'h_kk2f4146_qqpy_91.25_95d_v10.root'
+    #dataname = 'ThrustMissPNCLog2'
     #dataname = 'ThrustMissPNCDelphi'
 
     #datafile = 'h_kk2f4146_qqpy_91.25_v5.root'
@@ -77,54 +134,57 @@ if __name__ == '__main__':
     #dataname = 'ThrustMissPNCLog2'
 
     #filenameout = "unfolded_thrustDelphi_kk2f4146_qqpy_91.25_v2.root"
-    #filenameout = "unfolded_data_thrustDelphi_kk2f4146_qqpy_91.25_v2.root"
-    #filenameout = "unfolded_data_thrustDelphi_kk2f4146_qqardcy_91.25_v2.root"
-    #filenameout = "unfolded_data_thrustDelphi_apacic_91.25_v2.root"
-    #filenameout = "unfolded_data_thrustDelphi_pythia8_91.25_v2.root"
-    #filenameout = "unfolded_data_thrustDelphi_pythia8_dire_91.25_v2.root"
+    #filenameout = "unfolded_data_thrustDelphi_kk2f4146_qqpy_sys_91.25_v31.root" 
+
+
+    #filenameout = r"unfolded_data_{tag}_kk2f4146_qqpy_91.25_95d_v31.root"
+    #filenameout = r"unfolded_data_{tag}_pythia8_91.25_95d_v31.root"
+    #filenameout = r"unfolded_data_{tag}_pythia8_dire_91.25_95d_v9.root"
     
-    #filenameout = "unfolded_thrust_kk2f4146_qqpy_91.25_v2.root"
-    #filenameout = "unfolded_data_thrust_kk2f4146_qqpy_91.25_v2.root"
-    #filenameout = "unfolded_data_thrust_kk2f4146_qqardcy_91.25_v2.root"
-    #filenameout = "unfolded_data_thrust_apacic_91.25_v2.root"
-    filenameout = "unfolded_data_thrust_pythia8_91.25_v2.root"
-    #filenameout = "unfolded_data_thrust_pythia8_dire_91.25_v2.root"
+    #filenameout = "unfolded_thrust_kk2f4146_qqpy_91.25_v5.root"
+    #filenameout = "unfolded_thrust_pythia8_91.25_v9.root"
+    #filenameout = "unfolded_thrust_kk2f4146_qqpy_91.25_95d_v9.root"
 
     #filenamein = "response_kk2f4146_qqpy_91.25_v14.root"
     #datafile = 'response_kk2f4146_qqpy_91.25_v14.root'
     #filenameout = "unfolded_thrust_kk2f4146_qqpy_91.25_v2.root"
     #dataname='reco_thrust_log2'
-
-    fin = ROOT.TFile.Open(filenamein,'r')
+    
+    print(f"Configuration:")
+    print(f"  Mode: {args.mode}")
+    print(f"  Iterations: {args.iterations}")
+    print(f"  Response histogram: {response_name}")
+    
+    # Open files and get histograms
+    fin = ROOT.TFile.Open(filenamein, 'r')
 
     # Get original histograms
     counter = fin.Get("counter").Clone("N")
-    _response = fin.Get("response_thrust_log2")
-    reco = fin.Get('reco_thrust_log2')
-    gen= fin.Get("gen_thrust_log2")
+    _response = fin.Get(response_name)
+    reco = fin.Get(reco_name)
+    gen = fin.Get(gen_name)
 
-    #_response = fin.Get("response_thrustDelphi")
-    #reco = fin.Get('reco_thrustDelphi')
-    #gen= fin.Get("gen_thrustDelphi")
-
-    fdata = ROOT.TFile.Open(datafile,'r')
+    fdata = ROOT.TFile.Open(datafile, 'r')
     data = fdata.Get(dataname)
 
     normalization = fin.Get("counter").GetBinContent(2)
     try:
         n = fdata.Get('counter').GetBinContent(2)
+        data_counter = fdata.Get("counter").Clone("NData")
     except:
         n = fdata.Get('N').GetBinContent(2)
+        data_counter = fdata.Get("N").Clone("NData")
     
-    data.Scale(float(normalization)/n)
+    #data.Scale(float(normalization)/n)
 
-    
     # Save results
+    filenameout = filenameout.replace(".root", f"_iter{args.iterations}.root")
+    #filenameout = filenameout.replace(".root", f"_BinByBin.root")
     fout = ROOT.TFile(filenameout, 'recreate')
     fout.cd()
     
     _response.Write("response")
-    response=convert_to_roounfold_response(reco, gen, _response)
+    response = convert_to_roounfold_response(reco, gen, _response)
 
     # Check response matrix properties
     RESPONSE = response.Mresponse()
@@ -132,15 +192,23 @@ if __name__ == '__main__':
     print("Response matrix singular values:")
     singular.GetSig().Print()
 
-    # Perform unfolding
-    unfold = ROOT.RooUnfoldBayes(response, data, 4)
+    print(data, data.Integral())
+    # Perform unfolding with specified iterations
+    print(f"Performing Bayesian unfolding with {args.iterations} iterations...")
+    unfold = ROOT.RooUnfoldBayes(response, data, args.iterations)
+    #unfold = ROOT.RooUnfoldBinByBin(response, data)
 
     hUnf = unfold.Hunfold().Clone("unfolded")
+    print(hUnf, hUnf.Integral())
     hErr = unfold.Eunfold()
 
     counter.Write("N")
-    
+    data_counter.Write("NData")
+
     # Save restricted histograms used for unfolding
+    print(gen, gen.Integral())
+    #gen.Scale(n/normalization)
+    print(gen, gen.Integral())
     reco.Write("reco")
     gen.Write("gen") 
     data.Write("data")
@@ -151,7 +219,5 @@ if __name__ == '__main__':
 
     fout.Close()
 
-    print("Unfolding completed successfully!")
-#    print(f"Original histogram bins: {_reco_orig.GetNbinsX()}")
-#    print(f"Restricted histogram bins: {_reco.GetNbinsX()}")
-#    print(f"Response matrix size: {_response.GetNbinsX()}x{_response.GetNbinsY()}")
+    print(f"Unfolding completed successfully!")
+    print(f"Output saved to: {filenameout}")

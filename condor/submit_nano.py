@@ -140,12 +140,14 @@ if __name__ == "__main__":
     #nickname = "sh_apacic105_e91.25_w94_2l_c2"
     #nickname = "sh_zgpy_b94_2l_c2"
     #nickname = "sh_qqps_k94_2l_c2"
-    #nickname = "sh_pythia8"
-    #nickname = "sh_pythia8_dire"
-    nickname = "sh_kk2f4146tthl_e91.25_c94_2l_c2"
+    #nickname = "sh_pythia8_94c"
+    nickname = "sh_pythia8_dire_94c"
+    #nickname = "sh_kk2f4146tthl_e91.25_c94_2l_c2"
 
     #nickname = "short95_d2"
     #nickname = "sh_kk2f4146qqpy_e91.25_c95_1l_d2"
+    #nickname = "sh_pythia8_95d"
+    #nickname = "sh_pythia8_dire_95d"
 
     #nickname = "xsdst99_e192_e1"
     #nickname = "xsdst99_e196_e1"

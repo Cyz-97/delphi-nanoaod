@@ -205,6 +205,31 @@ def missing_p(p3: np.ndarray) -> np.ndarray:
     total_p = p3.sum(axis=0)          # shape (3,)
     return -total_p                   # missing-momentum (px,py,pz)
 
+def polar_angle(p3: np.ndarray) -> float:
+    """
+    Calculate the polar angle (theta) of a 3-momentum vector.
+
+    Parameters
+    ----------
+    p3 : (3,) ndarray
+        (px, py, pz) of a single momentum vector.
+
+    Returns
+    -------
+    float
+        Polar angle θ (in radians) defined as arccos(pz / |p|),
+        where |p| = sqrt(px² + py² + pz²).
+        Range: [0, π]
+    """
+    # Calculate polar angle: θ = arccos(pz / |p|)
+    p_magnitude = np.linalg.norm(p3)
+    
+    if p_magnitude == 0:
+        return 0.0  # undefined, but set to 0 by convention
+    else:
+        theta = np.arccos(p3[2] / p_magnitude)
+        return theta
+
 def thrust_axis(p3: np.ndarray,
                 eps: float = 1e-12,
                 include_met: bool = False) -> tuple[np.ndarray, float]:
@@ -309,7 +334,6 @@ _SIGN_VARIANTS = np.array([[-1, -1],
 
 def thrust_belle_std(p3: np.ndarray, eps: float = 1e-12) -> tuple[np.ndarray, float]:
     """
-    Python implementation of thrustBelleSTD for n < 4 particles.
     Based on the C++ ROOT/Belle implementation.
     """
     n = len(p3)
@@ -905,6 +929,7 @@ def calculate_sphericity_robust(px, py, pz, min_particles=2, regularization=1e-1
             "error_msg": f"Unexpected error: {str(e)}"
         }
 
+### main sphericity calculator
 def calculate_sphericity_with_fallback(px, py, pz):
     """
     Wrapper function that tries the robust calculation and falls back to default values.
@@ -1089,3 +1114,234 @@ def calculate_event_eec_histogram(pairs_data, template_hist, nx, ny):
             event_eec[flat_idx] += weight
     
     return event_eec
+
+def calc_scale_factor(pt, mode='none', shift=0.0, scale=1.0):
+    """
+    Calculate pT-dependent scale factor for momentum bias.
+    
+    Parameters
+    ----------
+    pt : float or array
+        Transverse momentum value(s)
+    mode : str, optional
+        Type of scaling to apply:
+        - 'none': No pT-dependent scaling (returns 1.0 + shift) * scale
+        - 'linear': Linear pT-dependent scaling from 1.0 at pT=30 to 1/0.6 at pT=50
+    shift : float, optional
+        Constant shift to add (default: 0.0)
+        Applied as: (base_scale + shift)
+    scale : float, optional
+        Constant multiplicative scale (default: 1.0)
+        Applied as: result * scale
+    
+    Returns
+    -------
+    float or array
+        Scale factor(s) to apply to momentum components
+    
+    Examples
+    --------
+    # No bias at all
+    calc_scale_factor(pt, mode='none', shift=0.0, scale=1.0)  # returns 1.0
+    
+    # Constant 10% increase for all particles
+    calc_scale_factor(pt, mode='none', shift=0.1)  # returns 1.1
+    
+    # Only pT-dependent linear function
+    calc_scale_factor(pt, mode='linear', shift=0.0, scale=1.0)
+    
+    # Both: linear function AND constant shift (not recommended)
+    calc_scale_factor(pt, mode='linear', shift=0.05)
+    """
+    pt = np.asarray(pt)
+    
+    if mode == 'none':
+        # No pT-dependent scaling - just constant shift and scale
+        base_scale = np.ones_like(pt)
+    elif mode == 'linear':
+        # pT-dependent linear scaling
+        #base_scale = np.where(
+        #    pt < 30, 
+        #    1.0,  
+        #    np.where(pt <= 50, pt/30., 1./0.6)
+        #)
+        bias = 0.001+0.00001*pt**2
+        base_scale = 1.0 + bias
+
+        #bias_scale = 0.2 * np.tanh(pt / 100)
+        #base_scale = 1.0 + bias_scale   
+
+        #pT_threshold=30.0
+        #slope=0.008
+        #sharpness=5.0
+
+        #ramp = np.maximum(0, pt - pT_threshold) * slope
+        #gate = 0.5 * (1 + np.tanh((pt - pT_threshold) / sharpness))
+        #bias = ramp * gate
+        #base_scale = 1.0 + bias
+    else:
+        raise ValueError(f"Unknown mode: {mode}. Choose 'none' or 'linear'")
+    
+    # Apply shift and scale
+    final_scale = (base_scale + shift) * scale
+    
+    return final_scale
+
+def apply_momentum_bias(px, py, pz, m, mode='linear', shift=0.0, scale=1.0):
+    """
+    Apply pT-dependent momentum bias to particle 4-vectors.
+    
+    Parameters
+    ----------
+    px, py, pz : arrays
+        Original 3-momentum components
+    m : array
+        Particle masses
+    mode : str, optional
+        Scaling mode ('linear', 'constant', 'none')
+    shift : float, optional
+        Constant shift to add to scale factor
+    scale : float, optional
+        Constant multiplicative scale
+    
+    Returns
+    -------
+    dict with keys: px_new, py_new, pz_new, e_new, pt_new
+    """
+    # Calculate original pT
+    pt_orig = np.sqrt(px**2 + py**2)
+    
+    # Get scale factor for each particle
+    scale_factor = calc_scale_factor(pt_orig, mode=mode, shift=shift, scale=scale)
+    
+    # Apply scale to 3-momentum
+    px_new = px * scale_factor
+    py_new = py * scale_factor
+    pz_new = pz * scale_factor
+    
+    # Calculate new energy with consistent mass
+    e_new = np.sqrt(px_new**2 + py_new**2 + pz_new**2 + m**2)
+    
+    # Calculate new pT
+    pt_new = np.sqrt(px_new**2 + py_new**2)
+    
+    return {
+        'px': px_new,
+        'py': py_new,
+        'pz': pz_new,
+        'e': e_new,
+        'pt': pt_new
+    }
+
+def randomly_drop_particles(px, py, pz, m, drop_fraction=0.0, seed=None):
+    """
+    Randomly drop a fraction of particles from the list.
+    
+    Parameters
+    ----------
+    px, py, pz, m : arrays
+        Particle momentum components and masses
+    drop_fraction : float
+        Fraction of particles to drop (0.0 = keep all, 0.1 = drop 10%)
+    seed : int, optional
+        Random seed for reproducibility. If None, uses truly random seed.
+    
+    Returns
+    -------
+    dict with keys: px, py, pz, m, mask
+        Filtered arrays and boolean mask of kept particles
+    """
+    if drop_fraction <= 0.0 or drop_fraction >= 1.0:
+        # No dropping or invalid fraction
+        return {
+            'px': px,
+            'py': py,
+            'pz': pz,
+            'm': m,
+            'mask': np.ones(len(px), dtype=bool)
+        }
+    
+    # If no seed provided, numpy will use a random seed automatically
+    # If seed is provided, set it for reproducibility
+    if seed is not None:
+        np.random.seed(seed)
+    
+    # Create mask: True = keep particle, False = drop particle
+    n_particles = len(px)
+    keep_mask = np.random.random(n_particles) > drop_fraction
+    
+    return {
+        'px': px[keep_mask],
+        'py': py[keep_mask],
+        'pz': pz[keep_mask],
+        'm': m[keep_mask],
+        'mask': keep_mask
+    }
+
+def apply_fake_drop_charged(px, py, pz, m, seed=None):
+    """
+    Apply fake particle dropping with pT-dependent probability for charged particles.
+    Simulates tracking inefficiency that increases with pT.
+    
+    Dropping probability:
+    - pT < 30 GeV: 0% (no dropping)
+    - 30 ≤ pT ≤ 50 GeV: linearly increases from 0% to 40%
+    - pT > 50 GeV: 40% (constant)
+    
+    Parameters
+    ----------
+    px, py, pz, m : arrays
+        Particle momentum components and masses
+    seed : int, optional
+        Random seed for reproducibility. If None, uses random seed.
+    
+    Returns
+    -------
+    dict with keys: px, py, pz, m, mask
+        Filtered arrays and boolean mask of kept particles
+    """
+    # Set random seed if provided
+    if seed is not None:
+        np.random.seed(seed)
+    
+    # Calculate pT for each particle
+    pt = np.sqrt(px**2 + py**2)
+    
+    # Calculate dropping probability for each particle
+    drop_prob = np.where(
+        pt < 30,
+        0.0,  # No dropping below 30 GeV
+        np.where(
+            pt <= 50,
+            0.4 * (pt - 30) / 20.0,  # Linear from 0% to 40% between 30-50 GeV
+            0.4  # Constant 40% above 50 GeV
+        )
+    )
+    
+    # Generate random numbers and create keep mask
+    random_vals = np.random.random(len(px))
+    keep_mask = random_vals > drop_prob  # Keep if random > drop_prob
+    
+    return {
+        'px': px[keep_mask],
+        'py': py[keep_mask],
+        'pz': pz[keep_mask],
+        'm': m[keep_mask],
+        'mask': keep_mask
+    }
+
+def calc_multiplicity_weight_linear(N_total):
+    """
+    Calculates a linear event weight pivoted around the point of best agreement.
+    """
+    N_total = np.asarray(N_total)
+    
+    # Define the pivot point and the new, gentler slope
+    pivot_N = 25.0
+    pivot_weight = 1.0
+    slope = 0.005  # This is your main tuning parameter
+    
+    # Point-slope form of a line
+    weight = slope * (N_total - pivot_N) + pivot_weight
+    
+    return np.maximum(0, weight)

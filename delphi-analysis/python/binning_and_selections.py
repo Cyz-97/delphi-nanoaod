@@ -19,16 +19,20 @@ ebins = np.append(evalues, [42, 45, 200])
 rbins = calcBinEdge(0.002, np.pi/2, 100)
 zbins = calcBinEdge(0.000001, 0.5, 100)
 
-tbins = np.linspace(0.5, 1.1, 61)
+tbins = np.linspace(-0.1, 0.5, 61)
 logtbins = np.linspace(-10, 0, 101)
 
-tbins2 = [0.5, 0.55, 0.6, 0.61, 0.62,
- 0.64, 0.65, 0.66, 0.67, 0.68, 0.69, 0.7, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77,
- 0.78, 0.79, 0.8, 0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.9, 0.91,
- 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1., 1.01, 1.02, 1.03, 1.04, 1.05,
- 1.06, 1.07, 1.08, 1.09, 1.1]
+tbins2 = [-0.1, 0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
+ 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,
+ 0.20, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29,
+ 0.30, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.38, 0.39, 0.40,
+ 0.45, 0.50]
 
-tbinsDelphi = [0.5, 0.72, 0.76, 0.8, 0.82, 0.84, 0.86, 0.88, 0.9, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0, 1.1]
+tbinsDelphi = [-0.1, 0.0, 0.01, 0.02, 0.03, 0.04,
+    0.05, 0.06, 0.07, 0.08, 0.09,
+    0.10, 0.11, 0.12, 0.14, 0.16,
+    0.18, 0.20, 0.25, 0.30, 0.35,
+    0.40, 0.50, 1.0]
 
 logtbins2 = [ -10., -8.,  -7., -6.5,
   -6.4, -6.3, -6.2, -6.1, -6., -5.9, -5.8, -5.7, -5.6, -5.5, -5.4, -5.3,
@@ -83,6 +87,9 @@ def apply_track_selection_delphi(px=None, py=None, pz=None, m=None, q=None, th=N
     
     if not has_reco and not has_gen:
         raise ValueError("Must provide either reconstructed or generated level data (or both)")
+
+    neutral_cut = 0.5
+    neutral_upper_cut = 50
     
     # ================================================================
     # RECONSTRUCTED LEVEL SELECTION
@@ -96,13 +103,16 @@ def apply_track_selection_delphi(px=None, py=None, pz=None, m=None, q=None, th=N
         sin_th = np.sin(th)
         abs_d0 = np.abs(d0)
         abs_z0sin = np.abs(z0 * sin_th)
+
+        e=np.sqrt(px**2 + py**2 + pz**2 + m**2)
         
         # Charged particle selection (reconstructed)
         core_charged = (abs_c > 0.1) & (pt > 0.4) & (abs_d0 < 4) & (abs_z0sin < 4)
         sel_c = core_charged & angle_accept
         
         # Neutral particle selection (reconstructed)
-        core_neutral = (abs_c < 0.1) & (pt > 0.5)
+        #core_neutral = (abs_c < 0.1) & (e > neutral_cut)
+        core_neutral = (abs_c < 0.1) & (e > neutral_cut) & (e < neutral_upper_cut)
         sel_n = core_neutral & angle_accept
         
         # Combined selection (charged + neutral, reconstructed)
@@ -119,6 +129,8 @@ def apply_track_selection_delphi(px=None, py=None, pz=None, m=None, q=None, th=N
         # Basic kinematic cuts for generated particles
         abs_c_gen = np.abs(q_gen)
         angle_accept_gen = (th_gen > np.deg2rad(20)) & (th_gen < np.deg2rad(160))
+
+        e_gen = np.sqrt(px_gen**2 + py_gen**2 + pz_gen**2 + m_gen**2)
         
         # Charged particle selection (generated)
         # Note: No track quality cuts (d0, z0) at generator level
@@ -126,7 +138,7 @@ def apply_track_selection_delphi(px=None, py=None, pz=None, m=None, q=None, th=N
         sel_c_gen = core_charged_gen & angle_accept_gen
         
         # Neutral particle selection (generated)
-        core_neutral_gen = (abs_c_gen < 0.1) & (pt_gen > 0.5)
+        core_neutral_gen = (abs_c_gen < 0.1) & (e_gen > neutral_cut) & (e_gen < neutral_upper_cut)
         sel_n_gen = core_neutral_gen & angle_accept_gen
         
         # Combined selection (charged + neutral, generated)

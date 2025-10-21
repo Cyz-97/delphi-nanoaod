@@ -13,7 +13,7 @@ h0 = ROOT.TH1D("N", "", 2, 0, 2)
 
 # 1) Define all your 1D histos and their bin edges
 h1d_defs = {
-    "ETotal"        : np.linspace(0, 300, 301),     
+    "ETotal"        : np.linspace(0, 1000, 1001),     
 
     "EEC_r"         : rbins,
     "EEC_z"         : zbins,
@@ -35,9 +35,12 @@ h1d_defs = {
 
     "Thrust_before_log" : logtbins, 
     "Thrust_before_log2": logtbins2,
+
+    "ThrustC_beforeDelphi"       : tbinsDelphi,
     
     "ThrustC"       : tbins,
-    "ThrustMissPC"  : tbins,
+    "ThrustCDelphi"       : tbinsDelphi,
+
     "ThrustNC"      : tbins,
     "ThrustNCLog"   : logtbins,
     
@@ -54,33 +57,39 @@ h1d_defs = {
     "ThrustMissPNCLog2_ALEPH" : logtbins2,
 
     "ThrustThetaMissPNC" : np.linspace(0, 180, 181),
+
+    "MissPTheta"  : np.linspace(0, 180, 181),
     
-    "MissPC"        : np.linspace(0, 100, 1001),
-    "MissPNC"       : np.linspace(0, 100, 1001),
+    "MissPC"        : np.linspace(0, 1000, 10001),
+    "MissPNC"       : np.linspace(0, 1000, 10001),
+    "MissPN"        : np.linspace(0, 1000, 10001),
 
     "TrackE"        : ebins,
-    "TrackPT"       : np.linspace(0, 100, 1001),
-    "NuetralE"      : np.linspace(0, 100, 1001),
-    "SumE"          : np.linspace(0, 200, 2001),
-    "SumTrackE"     : np.linspace(0, 200, 2001),
+    "TrackPT"       : np.linspace(0, 1000, 10001),
+    "NuetralE"      : np.linspace(0, 1000, 10001),
+    "SumE"          : np.linspace(0, 1000, 10001),
+    "SumE_2"         : np.linspace(0, 1000, 10001),
+    "SumTrackE"     : np.linspace(0, 1000, 10001),
     "TrackTheta"    : np.linspace(0, 180, 181),
     "TrackPhi"      : np.linspace(0, 180, 181),
 
     "TrackESele"    : ebins,
-    "TrackPTSele"   : np.linspace(0, 100, 1001),
-    "NuetralESele"  : np.linspace(0, 100, 1001),
-    "SumESele"      : np.linspace(0, 200, 2001),
-    "HJM"           : np.linspace(0, 200, 2001),
-    "SumTrackESele" : np.linspace(0, 200, 2001),
+    "TrackPTSele"   : np.linspace(0, 1000, 10001),
+    "NuetralESele"  : np.linspace(0, 1000, 10001),
+    "SumESele"      : np.linspace(0, 1000, 10001),
+    "SumESeleMissP" : np.linspace(0, 1000, 10001),
+    "HJM"           : np.linspace(0, 1000, 10001),
+    "SumTrackESele" : np.linspace(0, 1000, 10001),
     "TrackThetaSele": np.linspace(0, 180, 181),
     "TrackPhiSele"  : np.linspace(0, 180, 181),
     "NuetralThetaSele": np.linspace(0, 180, 181),
     "NuetralPhiSele": np.linspace(0, 180, 181),
     
-    "NCharged"      : np.linspace(0, 100, 101),
-    "NChargedTrkSele": np.linspace(0, 100, 101),
-    "NChargedSele"  : np.linspace(0, 100, 101),
-    "NPart"         : np.linspace(0, 200, 201),
+    "NCharged"       : np.linspace(0, 1000, 1001),
+    "NChargedTrkSele": np.linspace(0, 1000, 1001),
+    "NChargedSele"   : np.linspace(0, 1000, 1001),
+    "NPart"          : np.linspace(0, 1000, 1001),
+    "NPartSele"      : np.linspace(0, 1000, 1001),
 }
 
 # Build them in a single comprehension
@@ -170,13 +179,50 @@ if __name__ == "__main__":
     #filename = "/afs/cern.ch/user/z/zhangj/private/DELPHI/delphi-nanoaod/nanoaod_pythia8_1.root"
     filenameout = 'h_test_with_covariance.root'
     isGen = True
-    doChargedThrust = False
     
     parser = argparse.ArgumentParser()
     parser.add_argument("infiles", nargs='?', default=filename, help="name of input files")
     parser.add_argument("outfile", nargs='?', default=filenameout, help="name of output files")
     parser.add_argument("--jacobian", type=str, default="r", help="which variable to calculate covariance for (r or z)")
     parser.add_argument("--use_weights", action='store_true', default=False, help="use pt-dependent weights (default: no weights)")
+    parser.add_argument("--use_evt_weights", action='store_true', default=False, help="use multiplicity-dependent weights (default: no weights)")
+    
+    # Bias options for charged particles
+    parser.add_argument("--apply_bias_charged", action='store_true', default=False, 
+                        help="apply momentum bias to charged particles")
+    parser.add_argument("--bias_charged_mode", type=str, default='none', 
+                        choices=['none', 'linear'], 
+                        help="bias mode for charged: 'none' (constant only) or 'linear' (pT-dependent)")
+    parser.add_argument("--bias_charged_shift", type=float, default=0.0, 
+                        help="constant shift for charged particles (e.g., 0.1 = 10%% increase)")
+    parser.add_argument("--bias_charged_scale", type=float, default=1.0, 
+                        help="multiplicative scale for charged particles (e.g., 0.9 = 90%%)")
+
+    # Bias options for neutral particles
+    parser.add_argument("--apply_bias_neutral", action='store_true', default=False, 
+                        help="apply momentum bias to neutral particles")
+    parser.add_argument("--bias_neutral_mode", type=str, default='none', 
+                        choices=['none', 'linear'], 
+                        help="bias mode for neutral: 'none' (constant only) or 'linear' (pT-dependent)")
+    parser.add_argument("--bias_neutral_shift", type=float, default=0.0, 
+                        help="constant shift for neutral particles (e.g., 0.1 = 10%% increase)")
+    parser.add_argument("--bias_neutral_scale", type=float, default=1.0, 
+                        help="multiplicative scale for neutral particles (e.g., 0.9 = 90%%)")
+
+    # Particle dropping options
+    parser.add_argument("--drop_charged_fraction", type=float, default=0.0,
+                        help="fraction of charged particles to randomly drop (0.0-1.0, default: 0.0)")
+    parser.add_argument("--drop_neutral_fraction", type=float, default=0.0,
+                        help="fraction of neutral particles to randomly drop (0.0-1.0, default: 0.0)")
+    parser.add_argument("--drop_seed", type=int, default=None,
+                        help="random seed for particle dropping (for reproducibility)")
+
+    # Fake drop (pT-dependent dropping for charged particles)
+    parser.add_argument("--apply_fake_drop", action='store_true', default=False,
+                        help="apply pT-dependent fake dropping to charged particles (0%% at pT<30, 40%% at pT>50)")
+    parser.add_argument("--fake_drop_seed", type=int, default=None,
+                        help="random seed for fake dropping (for reproducibility)")
+
     args = parser.parse_args()
 
     treename = "t"
@@ -186,9 +232,12 @@ if __name__ == "__main__":
       isALEPH = False # True / False
     if isGen:
         treename = "tgenBefore" 
+        treename2 = "tgen"
     
     fin = ROOT.TFile.Open(args.infiles, 'r')
     t_hadrons = fin.Get(treename)
+
+    if isGen: t_hadrons2 = fin.Get(treename2)
 
     fout = ROOT.TFile(args.outfile, 'RECREATE')
 
@@ -215,7 +264,7 @@ if __name__ == "__main__":
     for iEvt in range(t_hadrons.GetEntries()):
         if iEvt % 1000 == 0:
             print(f"Processing event {iEvt}/{t_hadrons.GetEntries()}")
-            
+             
         t_hadrons.GetEntry(iEvt)
 
         E   = t_hadrons.Energy
@@ -260,32 +309,40 @@ if __name__ == "__main__":
                 )
 
         # --- Before any selection
-        e  = np.sqrt(px**2 + py**2 + pz**2 + m**2)
-        if isGen and np.sum(e)>E+0.1: continue
-        h0.Fill(0.5)
+        # --- Check energy conservation and switch if needed
+        e = np.sqrt(px**2 + py**2 + pz**2 + m**2)
+        h1d["SumE_2"].Fill(np.sum(e))
+
+        if isGen and len(e)<4: continue 
+    
+        if isGen and abs(np.sum(e)-E) > 0.1: 
+            # Energy not conserved - switch to t_hadrons2 for THIS event
+            t_hadrons2.GetEntry(iEvt)
+        
+            # Re-define get() to read from t_hadrons2
+            get = lambda *names: (np.array(getattr(t_hadrons2,n)) for n in names)
+            px,py,pz,m,q,th,pt,eta,phi,pwflag,hp = get(
+                'px','py','pz','mass','charge','theta','pt','eta','phi','pid','highPurity')
+
+        # Recalculate energy with new data
+        e = np.sqrt(px**2 + py**2 + pz**2 + m**2)
+                
         h1d["ETotal"].Fill(E)
+        h0.Fill(0.5)
         h1d["SumE"].Fill(np.sum(e))
         h1d["NPart"].Fill(len(px))
-
-        sumtrke = 0
-        sumtrk = 0
-        for k in range(len(pt)):
-            if abs(q[k]) > 0.1:
-                h1d["TrackE"].Fill(e[k])
-                h1d["TrackPT"].Fill(pt[k])
-                sumtrke+=e[k]
-                sumtrk+=1
-                h1d["TrackTheta"].Fill(math.degrees(th[k]))
-                h1d["TrackPhi"].Fill(math.degrees(phi[k]))
-        h1d["SumTrackE"].Fill(sumtrke)
-        h1d["NCharged"].Fill(sumtrk)
         
         p3 = np.stack((px, py, pz), axis=1)
 
-        axis, T = thrust_axis_fast(p3, include_met=True)
-        h1d["Thrust_before"].Fill(T)
-        h1d["Thrust_before2"].Fill(T)
-        h1d["Thrust_beforeDelphi"].Fill(T)
+        if isGen == True:
+            axis, T = thrust_axis_fast(p3, include_met=False)
+        else:
+            axis, T = thrust_axis_fast(p3, include_met=True)
+
+
+        h1d["Thrust_before"].Fill(1-T)
+        h1d["Thrust_before2"].Fill(1-T)
+        h1d["Thrust_beforeDelphi"].Fill(1-T)
         
         h1d["Thrust_before_log"].Fill(np.log(1-T))
         h1d["Thrust_before_log2"].Fill(np.log(1-T))
@@ -293,6 +350,21 @@ if __name__ == "__main__":
         sel_before = (abs(q) > 0.5)
         p3 = p3[sel_before]
         e = e[sel_before]
+        pt_c_before = pt[sel_before]
+        th_c_before = th[sel_before]
+        phi_c_before = phi[sel_before]
+
+        for k in range(len(e)):
+            h1d["TrackE"].Fill(e[k])
+            h1d["TrackPT"].Fill(pt_c_before[k])
+            h1d["TrackTheta"].Fill(math.degrees(th_c_before[k]))
+            h1d["TrackPhi"].Fill(math.degrees(phi_c_before[k]))
+        h1d["SumTrackE"].Fill(np.sum(e))
+        h1d["NCharged"].Fill(len(e))
+
+        axisC, TC = thrust_axis_fast(p3, include_met=False)
+        h1d["ThrustC_beforeDelphi"].Fill(1-TC)
+
         
         # |p|   (N,1) and (1,N) norms
         norm  = np.linalg.norm(p3, axis=1, keepdims=True)       # shape (N,1)
@@ -331,28 +403,101 @@ if __name__ == "__main__":
         px_c, py_c, pz_c, m_c, q_c, pt_c, th_c, phi_c = (
             v1[sel_c] for v1 in (px, py, pz, m, q, pt, th, phi)
         )
+
+        # Apply fake drop for charged particles (pT-dependent)
+        if args.apply_fake_drop:
+            fake_dropped = apply_fake_drop_charged(px_c, py_c, pz_c, m_c, 
+                                                   seed=args.fake_drop_seed)
+            px_c = fake_dropped['px']
+            py_c = fake_dropped['py']
+            pz_c = fake_dropped['pz']
+            m_c = fake_dropped['m']
+            # Also filter other arrays
+            keep_mask = fake_dropped['mask']
+            q_c = q_c[keep_mask]
+            pt_c = pt_c[keep_mask]
+            th_c = th_c[keep_mask]
+            phi_c = phi_c[keep_mask]
+
+        if args.drop_charged_fraction > 0.0:
+            dropped = randomly_drop_particles(px_c, py_c, pz_c, m_c, 
+                                             drop_fraction=args.drop_charged_fraction,
+                                             seed=args.drop_seed)
+            px_c = dropped['px']
+            py_c = dropped['py']
+            pz_c = dropped['pz']
+            m_c = dropped['m']
+            # Also filter other arrays
+            keep_mask = dropped['mask']
+            q_c = q_c[keep_mask]
+            pt_c = pt_c[keep_mask]
+            th_c = th_c[keep_mask]
+            phi_c = phi_c[keep_mask]
         
-        e_c  = np.sqrt(px_c**2 + py_c**2 + pz_c**2 + m_c**2)
+        if args.apply_bias_charged:
+            biased = apply_momentum_bias(px_c, py_c, pz_c, m_c, 
+                                        mode=args.bias_charged_mode, 
+                                        shift=args.bias_charged_shift, 
+                                        scale=args.bias_charged_scale)
+            px_c = biased['px']
+            py_c = biased['py']
+            pz_c = biased['pz']
+            e_c = biased['e']
+            pt_c = biased['pt']
+        else:
+            e_c = np.sqrt(px_c**2 + py_c**2 + pz_c**2 + m_c**2)
+        
         p3_c = np.stack((px_c, py_c, pz_c), axis=1)
-
-        px_nc, py_nc, pz_nc, m_nc, th_nc, phi_nc = (
-            v2[sel] for v2 in (px, py, pz, m, th, phi)
-        )
-        e_nc  = np.sqrt(px_nc**2 + py_nc**2 + pz_nc**2 + m_nc**2)
-        p3_nc = np.stack((px_nc, py_nc, pz_nc), axis=1)
-
-        p4_nc = np.stack((e_nc, px_nc, py_nc, pz_nc), axis=1)
 
         px_n, py_n, pz_n, m_n, th_n, phi_n = (
             v3[sel_n] for v3 in (px, py, pz, m, th, phi)
         )
-        e_n  = np.sqrt(px_n**2 + py_n**2 + pz_n**2 + m_n**2)
+
+        if args.drop_neutral_fraction > 0.0:
+            dropped_n = randomly_drop_particles(px_n, py_n, pz_n, m_n,
+                                               drop_fraction=args.drop_neutral_fraction,
+                                               seed=args.drop_seed)
+            px_n = dropped_n['px']
+            py_n = dropped_n['py']
+            pz_n = dropped_n['pz']
+            m_n = dropped_n['m']
+            # Also filter other arrays
+            keep_mask_n = dropped_n['mask']
+            th_n = th_n[keep_mask_n]
+            phi_n = phi_n[keep_mask_n]
+
+        if args.apply_bias_neutral:
+            biased_n = apply_momentum_bias(px_n, py_n, pz_n, m_n,
+                                            mode=args.bias_neutral_mode,
+                                            shift=args.bias_neutral_shift,
+                                            scale=args.bias_neutral_scale)
+            px_n = biased_n['px']
+            py_n = biased_n['py']
+            pz_n = biased_n['pz']
+            e_n = biased_n['e']
+        else:
+            e_n = np.sqrt(px_n**2 + py_n**2 + pz_n**2 + m_n**2)
         p3_n = np.stack((px_n, py_n, pz_n), axis=1)
+
+        px_nc = np.concatenate([px_c, px_n])
+        py_nc = np.concatenate([py_c, py_n])
+        pz_nc = np.concatenate([pz_c, pz_n])
+        m_nc = np.concatenate([m_c, m_n])
+        e_nc = np.concatenate([e_c, e_n])
+        th_nc = np.concatenate([th_c, th_n])
+        phi_nc = np.concatenate([phi_c, phi_n])
+        
+        p3_nc = np.stack((px_nc, py_nc, pz_nc), axis=1)
+        p4_nc = np.stack((e_nc, px_nc, py_nc, pz_nc), axis=1)
         
         axis_nc, T_nc = thrust_axis_fast(p3_nc)
-        axis_nc_met, T_nc_met = thrust_axis_fast(p3_nc, include_met=True)
 
-        theta_Tu = thrust_theta(axis_nc_met, T_nc_met, fold=False)
+        if isGen == True:
+            axis_nc_met, T_nc_met = thrust_axis_fast(p3_nc, include_met=False)
+        else:
+            axis_nc_met, T_nc_met = thrust_axis_fast(p3_nc, include_met=True)
+
+        theta_Tu_met = thrust_theta(axis_nc_met, T_nc_met, fold=False)
 
         h1d["NChargedTrkSele"].Fill(len(p3_c))
 
@@ -378,23 +523,30 @@ if __name__ == "__main__":
             h1d["EEC_z_trkSele"].Fill(z[i, j], ee[i,j])
 
         if len(p3_c) >= 7 and np.sum(e_nc) > 0.5*E:
-            h1d["ThrustThetaMissPNC"].Fill(np.degrees(theta_Tu))
+            h1d["ThrustThetaMissPNC"].Fill(np.degrees(theta_Tu_met))
 
-        pass_delphi = apply_event_selection_delphi(e_c=e_c, e_n=e_nc, theta_Tu=theta_Tu, E_reco=E)['pass_reco']
+        pass_delphi = apply_event_selection_delphi(e_c=e_c, e_n=e_nc, theta_Tu=theta_Tu_met, E_reco=E)['pass_reco']
         pass_aleph = apply_event_selection_aleph(e_c=e_c, e_nc=e_nc, sphericity=sphericity["cos_theta_v1"])['pass_reco']
 
         if pass_aleph:
-            h1d["ThrustMissPNC_ALEPH"].Fill(T_nc_met)
-            h1d["ThrustMissPNC2_ALEPH"].Fill(T_nc_met)
+            h1d["ThrustMissPNC_ALEPH"].Fill(1-T_nc_met)
+            h1d["ThrustMissPNC2_ALEPH"].Fill(1-T_nc_met)
             h1d["ThrustMissPNCLog_ALEPH"].Fill(np.log(1-T_nc_met))
             h1d["ThrustMissPNCLog2_ALEPH"].Fill(np.log(1-T_nc_met))
         
         if pass_delphi:
-            h0.Fill(1.5)
+
+            if args.use_evt_weights:
+                evt_weight = calc_multiplicity_weight_linear(len(p3_nc))
+            else:
+                evt_weight = 1.0
+
+            h0.Fill(1.5, evt_weight)
             
-            h1d["NChargedSele"].Fill(len(p3_c))
-            h1d["SumESele"].Fill(np.sum(e_nc))
-            h1d["SumTrackESele"].Fill(np.sum(e_c))
+            h1d["NChargedSele"].Fill(len(p3_c), evt_weight)
+            h1d["NPartSele"].Fill(len(p3_nc), evt_weight)
+            h1d["SumESele"].Fill(np.sum(e_nc), evt_weight)
+            h1d["SumTrackESele"].Fill(np.sum(e_c), evt_weight)
             for k in range(len(pt_c)):
                 weight = calc_weight(pt_c[k]) if args.use_weights else 1.0
                 h1d["TrackPTSele"].Fill(pt_c[k], weight)
@@ -412,20 +564,23 @@ if __name__ == "__main__":
 
             h1d["MissPC"].Fill(np.linalg.norm(p_miss_c))
             h1d["MissPNC"].Fill(np.linalg.norm(p_miss_nc))
+            h1d["MissPN"].Fill(np.linalg.norm(p_miss_nc-p_miss_c))
 
-            if doChargedThrust:
-                axis_c, T_c = thrust_axis(p3_c)
-                axis_c_met, T_c_met = thrust_axis(p3_c, include_met=True)
-                h1d["ThrustC"].Fill(T_c)
-                h1d["ThrustMissPC"].Fill(T_c_met)
+            h1d["MissPTheta"].Fill(math.degrees(polar_angle(p_miss_nc)))
 
-            h1d["ThrustNC"].Fill(T_nc)
-            h1d["ThrustMissPNC"].Fill(T_nc_met)
-            h1d["ThrustMissPNC2"].Fill(T_nc_met)
-            h1d["ThrustMissPNCDelphi"].Fill(T_nc_met)
-            h1d["ThrustNCLog"].Fill(np.log(1-T_nc))
-            h1d["ThrustMissPNCLog"].Fill(np.log(1-T_nc_met))
-            h1d["ThrustMissPNCLog2"].Fill(np.log(1-T_nc_met))
+            h1d["SumESeleMissP"].Fill(np.sum(e_nc)+np.linalg.norm(p_miss_nc))
+
+            axis_c, T_c = thrust_axis_fast(p3_c, include_met=False)
+            h1d["ThrustC"].Fill(1-T_c, evt_weight)
+            h1d["ThrustCDelphi"].Fill(1-T_c, evt_weight)
+
+            h1d["ThrustNC"].Fill(1-T_nc, evt_weight)
+            h1d["ThrustMissPNC"].Fill(1-T_nc_met, evt_weight)
+            h1d["ThrustMissPNC2"].Fill(1-T_nc_met, evt_weight)
+            h1d["ThrustMissPNCDelphi"].Fill(1-T_nc_met, evt_weight)
+            h1d["ThrustNCLog"].Fill(np.log(1-T_nc), evt_weight)
+            h1d["ThrustMissPNCLog"].Fill(np.log(1-T_nc_met), evt_weight)
+            h1d["ThrustMissPNCLog2"].Fill(np.log(1-T_nc_met), evt_weight)
 
             M_h = heavy_jet_mass(p4_nc, axis_nc_met)
             h1d["HJM"].Fill(M_h)
@@ -478,7 +633,6 @@ if __name__ == "__main__":
     for key in h2d.keys():
         h2d[key].Write()
 
-
     h_sum_of_eec=ROOT.TH1D("sum_of_eec", "", 200, 0, 200)
     h_sum_of_eec_products=ROOT.TH2D("sum_of_eec_products", "", 200, 0, 200, 200, 0, 200)
 
@@ -487,6 +641,5 @@ if __name__ == "__main__":
         for j in range(1, 201):
             h_sum_of_eec_products.SetBinContent(i, j, sum_of_eec_products[i,j])
 
-    
     h_sum_of_eec.Write()
     h_sum_of_eec_products.Write()

@@ -261,7 +261,6 @@ if __name__ == "__main__":
 
         ireco, igen, imiss, ifake = match_angular(rec_c, gen_c, 0.05)
 
-        print(len(ireco), len(igen), len(imiss), len(ifake))
         
         # Convert angles to degrees for histogram filling
         th_c_deg = np.degrees(th_c)
@@ -279,11 +278,11 @@ if __name__ == "__main__":
         # =================================================================
         
         # Fill efficiency histograms with ALL gen charged particles (denominator for efficiency)
-        print(len(pt_gen_c))
         for i in range(len(pt_gen_c)):
             histograms_1d['trk_eff'].Fill(pt_gen_c[i])
             histograms_1d['trk_eff_theta'].Fill(th_gen_c_deg[i])
             histograms_1d['trk_eff_phi'].Fill(phi_gen_c_deg[i])
+        print("DEBUG1", histograms_1d['trk_eff'].Integral())
         
         # Fill fake rate histograms with ALL reco charged particles
         for i in range(len(pt_c)):
@@ -330,6 +329,8 @@ if __name__ == "__main__":
             
             histograms_2d['match_trk_theta'].Fill(th_c_deg[reco_idx], th_gen_c_deg[gen_idx])
             histograms_2d['match_trk_phi'].Fill(phi_c_deg[reco_idx], phi_gen_c_deg[gen_idx])
+
+        print("DEBUG2", histograms_2d['match_trk'].Integral())
         
         # =================================================================
         # NEUTRAL TRACK HISTOGRAMS (using same matching function)

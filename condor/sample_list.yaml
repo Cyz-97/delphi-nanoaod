@@ -62,7 +62,7 @@ sh_zgpy_b94_2l_c2:
   copy_energy: "91.25" 
   extension: .al
 
-sh_pythia8:
+sh_pythia8_94c:
   type: sim
   stream: pythia8  
   version: v94c        
@@ -70,7 +70,7 @@ sh_pythia8:
   copy_energy: "91.25" 
   extension: .sdst
 
-sh_pythia8_dire:
+sh_pythia8_dire_94c:
   type: sim
   stream: pythia8_dire  
   version: v94c        
@@ -119,6 +119,22 @@ sh_kk2f4146qqpy_e91.25_c95_1l_d2:
   version: v95d
   energy: "91.25"
   copy_energy: "91.25"
+  extension: .sdst
+
+sh_pythia8_95d:
+  type: sim
+  stream: pythia8  
+  version: v95d        
+  energy: "91.25"      
+  copy_energy: "91.25" 
+  extension: .sdst
+
+sh_pythia8_dire_95d:
+  type: sim
+  stream: pythia8_dire  
+  version: v95d        
+  energy: "91.25"      
+  copy_energy: "91.25" 
   extension: .sdst
 
 xsdst99_e192_e1:
