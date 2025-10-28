@@ -16,6 +16,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 find_package(DELPHI REQUIRED)
 find_package(ROOT REQUIRED)
 
+
 # fetch argparse
 include(FetchContent)
 FetchContent_Declare(
@@ -34,6 +35,23 @@ FetchContent_MakeAvailable(yaml-cpp)
 add_subdirectory(delphi-analysis)
 add_subdirectory(delphi-nanoaod)
 
-if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-    target_link_libraries(delphi-nanoaod stdc++fs)
-endif()
+# FastJet
+find_package(Threads REQUIRED)
+
+execute_process(COMMAND fastjet-config --cxxflags
+                OUTPUT_VARIABLE FJ_CXXFLAGS
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND fastjet-config --libs
+                OUTPUT_VARIABLE FJ_LIBS
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+separate_arguments(FJ_CXXFLAGS)
+separate_arguments(FJ_LIBS)
+
+
+
+#if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+	target_include_directories(delphi-nanoaod PRIVATE ${FastJet_INCLUDE_DIRS})
+target_compile_options(delphi-nanoaod PRIVATE ${FJ_CXXFLAGS})
+target_link_libraries(delphi-nanoaod ${FJ_LIBS} Threads::Threads)
+#endif()
